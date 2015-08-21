@@ -1,0 +1,6 @@
+/content/pref/lib/
+*.komodoproject
+*.xpi
+.komodotools/
+/chrome.manifest
+/build/
