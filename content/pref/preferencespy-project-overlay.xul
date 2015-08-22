@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+
+<!DOCTYPE overlay SYSTEM "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+<overlay id="preferencespy_projectpref_overlay"
+         xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+
+  <treechildren id="mainChildren">
+	<!-- TODO insert last to avoid appearing before the "Windows" pref page -->
+    <treeitem id="preferencespy_Item"
+			  container="false"
+			  advanced="true">
+      <treerow>
+        <treecell class="treecell-indent"
+				  url="chrome://preferencespy/content/pref/pref-all.xul"
+                  label="All (Read-Only)"/>
+      </treerow>
+    </treeitem>
+  </treechildren>
+</overlay>

@@ -8,5 +8,5 @@ skin preferencespy classic/1.0 jar:preferencespy.jar!/skin/
 locale preferencespy en-US jar:preferencespy.jar!/locale/en-US/
 # #endif
 
-overlay chrome://komodo/content/pref/pref.xul chrome://preferencespy/content/pref/preferencespy-all-overlay.xul
-overlay chrome://komodo/content/pref/project.xul chrome://preferencespy/content/pref/preferencespy-all-overlay.xul
+overlay chrome://komodo/content/pref/pref.xul chrome://preferencespy/content/pref/preferencespy-global-overlay.xul
+overlay chrome://komodo/content/pref/project.xul chrome://preferencespy/content/pref/preferencespy-project-overlay.xul

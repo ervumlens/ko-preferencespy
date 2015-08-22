@@ -2,13 +2,12 @@
 
 <!DOCTYPE overlay SYSTEM "http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
-<overlay id="preferencespy_filepref_overlay"
+<overlay id="preferencespy_globalpref_overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <treechildren id="panelChildren">
 	<!-- TODO insert last to avoid appearing before the "Windows" pref page -->
     <treeitem id="preferencespy_Item"
-			  insertafter="projectsItem"
 			  container="false"
 			  advanced="true">
       <treerow>
