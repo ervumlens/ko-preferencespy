@@ -2,50 +2,6 @@
 
 log = require('ko/logging').getLogger 'preference-spy'
 
-createCell = (parent, label) ->
-	cell = document.createElement 'treecell'
-	if label
-		cell.setAttribute 'label', label
-	parent.appendChild cell
-	cell
-
-addItem = (parent, values) ->
-	return unless values
-	isObject = values.type is 'object'
-	isPopulatedObject = isObject and not values.value.isEmpty()
-	item = document.createElement 'treeitem'
-	item.setAttribute 'container', 'true'
-
-	if isPopulatedObject
-		item.setAttribute 'open', 'false'
-	else
-		item.setAttribute 'open', 'true'
-
-	parent.appendChild item
-
-	row = document.createElement 'treerow'
-	item.appendChild row
-
-	createCell row, values.id.toString()
-	createCell row, (if isObject then values.value.name else values.value.toString())
-	createCell row, values.type
-	if values.overwritten
-		cell = createCell row, '✓'
-
-	if isPopulatedObject
-		children = document.createElement 'treechildren'
-		item.appendChild children
-
-		values.value.addChildren children
-		#childItem = document.createElement 'treeitem'
-		#children.appendChild childItem
-		#
-		#childRow = document.createElement 'treerow'
-		#childItem.appendChild childRow
-		#
-		#createCell childRow, 'foobar'
-		#createCell childRow, 'blingblong'
-
 extractObjectValue = (container) ->
 	try
 		ordered = container.QueryInterface Ci.koIOrderedPreference

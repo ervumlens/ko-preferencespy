@@ -11,7 +11,8 @@ ColumnIds =
 #A TreeRow contains either a preference value
 #or the root of a preference set
 class TreeRow
-	constructor: (@name, @loader) ->
+	constructor: (@name, @parent, @loader) ->
+		@depth = @parent.depth + 1
 
 	load: ->
 		values = @loader @name, @
@@ -43,6 +44,10 @@ class TreeRow
 		@load()
 		@container?
 
+	isContainerEmpty: ->
+		@load()
+		@container and @container.isEmpty()
+
 #A TreeView implements nsITreeView
 module.exports = class TreeView
 	#All new rows go in here.
@@ -51,13 +56,18 @@ module.exports = class TreeView
 	rowCount: 0
 
 	constructor: (prefData) ->
-		prefData.visitNames (name, loader) => @addRow name, loader
+		@root = depth: -1
+		prefData.visitNames (name, loader) => @addRow name, @root, loader
 
-	addRow: (name, loader) ->
-		newRow = new TreeRow name, loader
+	addRow: (name, parent, loader) ->
+		newRow = new TreeRow name, parent, loader
 		@allRows.push newRow
 		@filteredRowsToAllRows.push @rowCount
 		@rowCount++
+
+		parent.firstChild = newRow unless parent.firstChild
+		parent.lastChild.next = newRow if parent.lastChild
+		parent.lastChild = newRow
 
 	getFilteredRow: (index) ->
 		@allRows[@filteredRowsToAllRows[index]]
@@ -84,7 +94,8 @@ module.exports = class TreeView
 		false
 
 	isContainerEmpty: (index) ->
-		true
+		row = @getFilteredRow index
+		row.isContainerEmpty()
 
 	isSeparator: (index) ->
 		false
@@ -93,10 +104,12 @@ module.exports = class TreeView
 		false
 
 	getLevel: (index) ->
-		0
+		row = @getFilteredRow index
+		row.depth
 
 	hasNextSibling: (index, afterIndex) ->
-		false
+		row = @getFilteredRow index
+		row.next?
 
 	getImgSrc: (index, col) ->
 		null
