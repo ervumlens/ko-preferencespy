@@ -11,8 +11,18 @@ ColumnIds =
 #A TreeRow contains either a preference value
 #or the root of a preference set
 class TreeRow
+	state: 'closed'
+	depth: -1
+
 	constructor: (@name, @parent, @loader) ->
-		@depth = @parent.depth + 1
+		@parent.addChild(@) if @parent
+
+	addChild: (childRow) ->
+		@children = [] unless @children
+		@children.push childRow
+		childRow.depth = @depth + 1
+		@lastChild.next = childRow if @lastChild
+		@lastChild = childRow
 
 	load: ->
 		values = @loader @name, @
@@ -23,7 +33,11 @@ class TreeRow
 			when 'preferencespy-namecol' then @getName()
 			when 'preferencespy-valuecol' then @getValue()
 			when 'preferencespy-typecol' then @getType()
-			when 'preferencespy-overwrittencol' then @getOverwritten()
+			when 'preferencespy-overwrittencol'
+				if @getOverwritten()
+					'✓'
+				else
+					''
 
 	getName: ->
 		@name
@@ -46,31 +60,60 @@ class TreeRow
 
 	isContainerEmpty: ->
 		@load()
-		@container and @container.isEmpty()
+		if @container then @container.isEmpty() else true
+
+	childCount: ->
+		@children?.length or 0
+
+	populate: ->
+		@load()
+		#log.warn "Populating #{@name}? it has #{@children?.length} children and #{@container?} container"
+		return if @children or not @container
+
+		@container.visitNames (name, loader) =>
+			log.warn "Added #{name}"
+			row = new TreeRow name, @, loader
+
+	isOpen: ->
+		@state is 'open'
+
+	open: ->
+		@state = 'open'
+
+	close: ->
+		@state = 'closed'
+
 
 #A TreeView implements nsITreeView
-module.exports = class TreeView
+class TreeView
+
 	#All new rows go in here.
 	allRows: []
-	filteredRowsToAllRows: []
+
+	#Map visual rows to data rows
+	#filteredRowsToAllRows: []
+
+	#Number of displayed rows
 	rowCount: 0
 
 	constructor: (prefData) ->
-		@root = depth: -1
+		#Root is a virtual row under which all top-level rows belong.
+		@root = new TreeRow
 		prefData.visitNames (name, loader) => @addRow name, @root, loader
 
 	addRow: (name, parent, loader) ->
 		newRow = new TreeRow name, parent, loader
 		@allRows.push newRow
-		@filteredRowsToAllRows.push @rowCount
+		@root.children.push newRow
+		#@filteredRowsToAllRows.push @rowCount
 		@rowCount++
 
-		parent.firstChild = newRow unless parent.firstChild
-		parent.lastChild.next = newRow if parent.lastChild
-		parent.lastChild = newRow
-
 	getFilteredRow: (index) ->
-		@allRows[@filteredRowsToAllRows[index]]
+		#@allRows[@filteredRowsToAllRows[index]]
+		@allRows[index]
+
+	getUnfilteredIndex: (index) ->
+		index
 
 	getCellText: (index, col) ->
 		#log.warn "value: #{index}, #{col.id}"
@@ -78,7 +121,7 @@ module.exports = class TreeView
 		row.getText col
 
 	getCellValue: (index, col) ->
-		'value'
+		null
 
 	setTree: (treebox) ->
 		@treebox = treebox
@@ -128,3 +171,51 @@ module.exports = class TreeView
 
 	toggleOpenState: (index) ->
 		return if @isContainerEmpty index
+		row = @getFilteredRow index
+		row.populate()
+
+		if row.isOpen()
+			row.close()
+			@removeChildren row, index
+		else
+			row.open()
+			@insertChildren row, index
+
+	insertChildren: (row, filteredIndex) ->
+		#Insert the children into @allRows
+		inserted = row.childCount()
+		trueIndex = @getUnfilteredIndex filteredIndex
+		#log.warn "Inserting #{inserted} rows, starting at #{filteredIndex} (#{trueIndex})"
+
+		newRows = row.children
+		for i in [0 ... inserted]
+			@allRows.splice trueIndex + 1 + i, 0, newRows[i]
+
+		#Update @rowCount
+		@rowCount += inserted
+
+		#Update @filteredRowsToAllRows
+		#TODO re-sort, filter to get this right
+
+		#Call @treebox.rowCountChanged
+		@treebox.rowCountChanged filteredIndex + 1, inserted
+
+	removeChildren: (row, filteredIndex) ->
+		#remove the children into @allRows
+		removed = row.childCount()
+		trueIndex = @getUnfilteredIndex filteredIndex
+		#log.warn "Removing #{removed} rows, starting at #{filteredIndex} (#{trueIndex})"
+
+		@allRows.splice trueIndex + 1, removed
+
+		#Update @rowCount
+		@rowCount -= removed
+
+		#Update @filteredRowsToAllRows
+		#TODO re-sort, filter to get this right
+
+		#Call @treebox.rowCountChanged
+		@treebox.rowCountChanged filteredIndex + 1, -removed
+
+
+module.exports = TreeView

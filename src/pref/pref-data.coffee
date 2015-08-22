@@ -24,6 +24,8 @@ class PreferenceContainer
 		@count is 0
 	addChildren: (root) ->
 	visitNames: (visitor) ->
+		log.warn "Called 'visitNames' on a mystery container"
+
 	getValueForId: (id, type) ->
 		switch type
 			when 'string' then @container.getStringPref id
@@ -33,10 +35,14 @@ class PreferenceContainer
 			when 'object' then extractObjectValue @container.getPref id
 			else '(unknown)'
 
+	#This is not universally implemented
+	isOverwritten: (id) ->
+		false
+
 	fetchValues: (id, target) ->
 		#log.warn "Loading #{id}..."
 		target.type = @container.getPrefType(id)
-		target.overwritten = @container.hasPrefHere(id)
+		target.overwritten = @isOverwritten id
 		isContainer = target.type is 'object'
 
 		if isContainer
@@ -56,8 +62,12 @@ class PreferenceSet extends PreferenceContainer
 		return
 
 	visitNames: (visitor) ->
+		#log.warn "Called 'visitNames' on a PrefSet with #{@count} prefs"
 		for id in @allIds
 			visitor id, (args...) => @fetchValues args...
+
+	isOverwritten: (id) ->
+		@container.hasPrefHere(id)
 
 	addChildren: (root) ->
 		for id in @allIds
@@ -70,6 +80,11 @@ class OrderedPreference extends PreferenceContainer
 	constructor: (@container) ->
 		@count = @container.length
 		@name = '(empty)' if @isEmpty()
+
+	visitNames: (visitor) ->
+		#log.warn "Called 'visitNames' on a OrderedPrefs with #{@count} prefs"
+		for id in [0 ... @count]
+			visitor id, (args...) => @fetchValues args...
 
 	addChildren: (root) ->
 		id = 0
