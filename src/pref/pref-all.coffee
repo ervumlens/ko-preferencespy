@@ -1,116 +1,80 @@
 #https://github.com/Komodo/KomodoEdit/blob/master/src/prefs/koIPrefs.idl
 #https://github.com/Komodo/KomodoEdit/blob/d5716aec849a9063572f374f2c8a86007b2d80e5/src/chrome/komodo/content/pref/koPrefWindow.js#L65
+#https://stackoverflow.com/questions/21148975/what-event-am-i-supposed-to-capture-to-catch-checkbox-changes-in-a-xul-tree
+#https://dev.mozilla.jp/localmdc/localmdc_5738.html
+
+PRIMARY_CLICK = 0
+SECONDARY_CLICK = 2
 
 log = require('ko/logging').getLogger 'preference-spy'
+TreeView = require 'preferencespy/pref/tree-view'
+PrefData = require 'preferencespy/pref/pref-data'
 
 #{Cc, Ci, Cu} = require 'chrome'
 Cc = Components.classes
 Ci = Components.interfaces
 Cu = Components.utils
 
-createCell = (parent, label) ->
-	cell = document.createElement 'treecell'
-	if label
-		cell.setAttribute 'label', label
-	parent.appendChild cell
-	cell
+class ClickTarget
+	constructor: (@tree, @event) ->
+		switch @event.target.localName
+			when 'treechildren'
+				box = @tree.treeBoxObject
+				cell = row: {}, col: {}, child: {}
+				box.getCellAt @event.clientX, @event.clientY, @cell.row, @cell.col, @cell.child
+				@click = => @showCellMenu cell
+			when 'treecol'
+				attributes = @event.target.attributes
+				for i in [0 ... attributes.length]
+					name = attributes[i].name
+					value = attributes[i].value
+					log.warn "@event.target.attributes[#{i}] = (#{name},#{value})"
 
-addItem = (parent, values) ->
-	return unless values
-	isObject = values.type is 'object'
-	isPopulatedObject = isObject and not values.value.isEmpty()
-	item = document.createElement 'treeitem'
-	item.setAttribute 'container', 'true'
+				#@click = => @sortOnColumn @event.target
 
-	if isPopulatedObject
-		item.setAttribute 'open', 'false'
-	else
-		item.setAttribute 'open', 'true'
+	click: ->
 
-	parent.appendChild item
+	sortOnColumn: (col)->
+		#do sort
+		log.warn "Sorting column..."
+		if col.getAttribute('sortActive') is 'true'
+			log.warn "Toggling sort..."
+			#toggle sorting
+			if col.getAttribute('sortDirection') is 'ascending'
+				log.warn "Sort descending"
+				col.removeAttribute 'sortActive'
+				col.removeAttribute 'sortDirection'
+				col.removeAttribute 'flex'
+				col.setAttribute 'sortActive', 'true'
+				col.setAttribute 'sortDirection', 'descending'
+			else
+				log.warn "Sort ascending"
+				col.removeAttribute 'sortActive'
+				col.removeAttribute 'sortDirection'
+				col.removeAttribute 'flex'
+				col.setAttribute 'sortActive', 'true'
+				col.setAttribute 'sortDirection', 'ascending'
+		else
+			#TODO find the active one and deactivate it
+			log.warn "New sort column..."
+		true
 
-	row = document.createElement 'treerow'
-	item.appendChild row
+	showCellMenu: (cell)->
+		#show select all/copy prompt
+		log.warn "Showing context menu..."
+		true
 
-	createCell row, values.id.toString()
-	createCell row, (if isObject then values.value.name else values.value.toString())
-	createCell row, values.type
-	if values.overwritten
-		cell = createCell row, '✓'
+@PreferenceSpy_onTreeClicked = (tree, event) ->
+	#target = new ClickTarget tree, event
+	#target.click()
 
-	if isPopulatedObject
-		children = document.createElement 'treechildren'
-		item.appendChild children
-
-		values.value.addChildren children
-		#childItem = document.createElement 'treeitem'
-		#children.appendChild childItem
-		#
-		#childRow = document.createElement 'treerow'
-		#childItem.appendChild childRow
-		#
-		#createCell childRow, 'foobar'
-		#createCell childRow, 'blingblong'
-
-
-extractObjectValue = (container) ->
-	try
-		ordered = container.QueryInterface Ci.koIOrderedPreference
-		return new OrderedPreference container
-	catch e
-		#log.warn e
-	try
-		prefset = container.QueryInterface Ci.koIPreferenceSet
-		return new PreferenceSet prefset
-	catch e
-		#log.warn e
-
-	new PreferenceContainer
-
-class PreferenceContainer
-	name: '(object)'
-	count: 0
-	constructor: ->
-	isEmpty: ->
-		@count is 0
-	addChildren: (root) ->
-	getValueForId: (id, type) ->
-		switch type
-			when 'string' then @container.getStringPref id
-			when 'boolean' then @container.getBooleanPref id
-			when 'long' then @container.getLongPref id
-			when 'double' then @container.getDoublePref id
-			when 'object' then extractObjectValue @container.getPref id
-			else '(unknown)'
-
-class PreferenceSet extends PreferenceContainer
-	constructor: (@container) ->
-		@allIds = @container.getAllPrefIds()
-		@count = @allIds.length
-		@name = '(empty)' if @isEmpty()
-
-	addChildren: (root) ->
-		for id in @allIds
-			overwritten = @container.hasPrefHere(id)
-			type = @container.getPrefType(id)
-			value = @getValueForId id, type
-			addItem root, {id, value, type, overwritten}
-
-class OrderedPreference extends PreferenceContainer
-	constructor: (@container) ->
-		@count = @container.length
-		@name = '(empty)' if @isEmpty()
-
-	addChildren: (root) ->
-		id = 0
-		loop
-			break unless id < @count
-			overwritten = false
-			type = @container.getPrefType(id)
-			value = @getValueForId id, type
-			addItem root, {id, value, type, overwritten}
-			++id
-
+	#log.warn ">>"
+	#log.warn event.target.localName
+	#log.warn event.currentTarget.localName
+	#log.warn event.originalTarget.localName
+	#log.warn event.explicitOriginalTarget.localName
+	#log.warn "<<"
+	#log.warn "clicked on #{inf.row.value} #{inf.col.value} #{inf.child.value}"
 
 @OnPreferencePageLoading = (rawPrefset) ->
 	#log.warn 'PreferenceSpy::OnPreferencePageLoading!'
@@ -119,9 +83,15 @@ class OrderedPreference extends PreferenceContainer
 	#TODO create a treeseparator at the bottom of the list,
 	#then move our treeitem below it.
 
-	root = document.getElementById 'preferencespy-prefs-children'
-	prefset = new PreferenceSet rawPrefset
-	prefset.addChildren root
+	prefData = new PrefData(rawPrefset)
+	tree = document.getElementById 'preferencespy-tree'
+	tree.view = new TreeView prefData
+
+	#root = document.getElementById 'preferencespy-prefs-children'
+	#prefData.addChildren root
+
+	#prefset = new PreferenceSet rawPrefset
+	#prefset.addChildren root
 
 @PreferenceSpyAll_OnLoad = ->
 	#log.warn 'PreferenceSpyAll_OnLoad!'

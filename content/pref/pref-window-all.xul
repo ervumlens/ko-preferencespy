@@ -24,7 +24,7 @@
     <script src="chrome://xtk/content/xtk.js" type="application/x-javascript;version=1.7"/>
     <script src="chrome://komodo/content/library/logging.js" type="application/x-javascript;version=1.7"/>
     <script src="chrome://komodo/content/library/filepickers.js" type="application/x-javascript;version=1.7"/>
-    <script src="chrome://preferencespy/content/pref/lib/pref-all.js" type="application/x-javascript;version=1.7"/>
+    <script src="chrome://preferencespy/content/lib/pref/pref-all.js" type="application/x-javascript;version=1.7"/>
     <script src="chrome://komodo/content/pref/koPrefUtils.js" type="application/x-javascript;version=1.7" />
     <script src="chrome://komodo/content/library/dialogs.js" type="application/x-javascript;version=1.7"/>
     <script type="application/x-javascript;version=1.7" src="chrome://komodo/content/library/windowManager.js"/>
@@ -34,15 +34,28 @@
 	<!-- TODO let each treecol observe a sort command -->
 
     <vbox id="preferencespy-prefs-vbox" flex="1" class="autoscroll">
-		<tree id="treeid" flex="1">
+		<tree id="preferencespy-tree"
+			  flex="1"
+			  onclick="PreferenceSpy_onTreeClicked(this, event)"
+			  >
 			<treecols>
-				<treecol id="preferencespy-namecol" label="Name" primary="true" sortActive="true" sortDirection="ascending" flex="1"/>
+				<treecol id="preferencespy-namecol"
+						 label="Name"
+						 primary="true"
+						 sortActive="true"
+						 sort="Name"
+						 sortDirection="ascending"
+						 flex="1"/>
 				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-valuecol" label="Value" flex="1"/>
+				<treecol id="preferencespy-valuecol"
+						 label="Value"
+						 flex="1"/>
 				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-typecol" label="Type" />
+				<treecol id="preferencespy-typecol"
+						 label="Type" />
 				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-overwrittencol" label="Overwritten" />
+				<treecol id="preferencespy-overwrittencol"
+						 label="Overwritten" />
 			</treecols>
 			<treechildren id="preferencespy-prefs-children">
 			</treechildren>

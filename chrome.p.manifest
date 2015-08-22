@@ -10,3 +10,5 @@ locale preferencespy en-US jar:preferencespy.jar!/locale/en-US/
 
 overlay chrome://komodo/content/pref/pref.xul chrome://preferencespy/content/pref/preferencespy-global-overlay.xul
 overlay chrome://komodo/content/pref/project.xul chrome://preferencespy/content/pref/preferencespy-project-overlay.xul
+
+category require-path preferencespy chrome://preferencespy/content/lib/
