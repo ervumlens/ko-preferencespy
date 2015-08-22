@@ -12,7 +12,7 @@
 			  advanced="true">
       <treerow>
         <treecell class="treecell-indent"
-				  url="chrome://preferencespy/content/pref/pref-all.xul"
+				  url="chrome://preferencespy/content/pref/pref-window-all.xul"
                   label="All (Read-Only)"/>
       </treerow>
     </treeitem>
