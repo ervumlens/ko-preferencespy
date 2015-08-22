@@ -36,13 +36,13 @@
     <vbox id="preferencespy-prefs-vbox" flex="1" class="autoscroll">
 		<tree id="treeid" flex="1">
 			<treecols>
-				<treecol id="preferencespy-namecol" label="Name" primary="true" fixed="false" sortActive="true" sortDirection="ascending" flex="1"/>
+				<treecol id="preferencespy-namecol" label="Name" primary="true" sortActive="true" sortDirection="ascending" flex="1"/>
 				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-valuecol" label="Value" fixed="false" flex="1"/>
+				<treecol id="preferencespy-valuecol" label="Value" flex="1"/>
 				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-typecol" label="Type" fixed="false" />
+				<treecol id="preferencespy-typecol" label="Type" />
 				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-overwrittencol" label="Overwritten" fixed="false" />
+				<treecol id="preferencespy-overwrittencol" label="Overwritten" />
 			</treecols>
 			<treechildren id="preferencespy-prefs-children">
 			</treechildren>
