@@ -15,13 +15,33 @@ class TreeRow
 	depth: -1
 
 	constructor: (@name, @parent, @loader) ->
-		@parent.addChild(@) if @parent
+		@parent.addChild @
+
+	index: ->
+		if @prevSibling
+			@prevSibling.lastIndex() + 1
+		else
+			@parentIndex() + 1
+
+	lastIndex: ->
+		if @isOpen() and @lastChild
+			@lastChild.lastIndex()
+		else
+			@index()
+
+	parentIndex: ->
+		@parent.index()
 
 	addChild: (childRow) ->
+		childRow.root = @root
 		@children = [] unless @children
 		@children.push childRow
 		childRow.depth = @depth + 1
-		@lastChild.next = childRow if @lastChild
+
+		if @lastChild
+			@lastChild.nextSibling = childRow
+			childRow.prevSibling = @lastChild
+
 		@lastChild = childRow
 
 	load: ->
@@ -65,55 +85,118 @@ class TreeRow
 	childCount: ->
 		@children?.length or 0
 
-	populate: ->
+	loadChildren: ->
 		@load()
 		#log.warn "Populating #{@name}? it has #{@children?.length} children and #{@container?} container"
 		return if @children or not @container
 
 		@container.visitNames (name, loader) =>
-			log.warn "Added #{name}"
+			#log.warn "Added #{name}"
 			row = new TreeRow name, @, loader
 
+
+	toggleOpen: ->
+		@loadChildren()
+		if @isOpen()
+			@close()
+		else
+			@open()
+
 	isOpen: ->
+		return false unless @isContainer()
 		@state is 'open'
 
 	open: ->
+		return if @isOpen()
+
 		@state = 'open'
+		@root.insertChildren @
 
 	close: ->
+		return unless @isOpen()
+
 		@state = 'closed'
+		#Close all children first. This ensures
+		#our numbers add up.
+		child.close() for child in @children
+
+		@root.removeChildren @
 
 
-#A TreeView implements nsITreeView
-class TreeView
-
-	#All new rows go in here.
+class TreeRoot extends TreeRow
 	allRows: []
 
-	#Map visual rows to data rows
-	#filteredRowsToAllRows: []
+	constructor: ->
+		@root = @
+		@isRoot = true
 
-	#Number of displayed rows
-	rowCount: 0
+	index: ->
+		-1
 
-	constructor: (prefData) ->
-		#Root is a virtual row under which all top-level rows belong.
-		@root = new TreeRow
-		prefData.visitNames (name, loader) => @addRow name, @root, loader
+	addChild: (childRow) ->
+		super
+		@allRows.push childRow
 
-	addRow: (name, parent, loader) ->
-		newRow = new TreeRow name, parent, loader
-		@allRows.push newRow
-		@root.children.push newRow
-		#@filteredRowsToAllRows.push @rowCount
-		@rowCount++
+	visibleRowCount: ->
+		@allRows.length
 
 	getFilteredRow: (index) ->
-		#@allRows[@filteredRowsToAllRows[index]]
 		@allRows[index]
 
 	getUnfilteredIndex: (index) ->
 		index
+
+	parentIndex: (index) ->
+		@getFilteredRow(index).parentIndex()
+
+	insertChildren: (row) ->
+		#Insert the children into @allRows
+		inserted = row.childCount()
+		filteredIndex = row.index()
+		trueIndex = @getUnfilteredIndex filteredIndex
+		#log.warn "Inserting #{inserted} rows, starting at #{row.index()} (#{trueIndex})"
+
+		newRows = row.children
+		for i in [0 ... inserted]
+			@allRows.splice trueIndex + 1 + i, 0, newRows[i]
+
+		#Update @filteredRowsToAllRows
+		#TODO re-sort, filter to get this right
+
+		#Call @treebox.rowCountChanged
+		@treebox.rowCountChanged filteredIndex + 1, inserted
+
+	removeChildren: (row, filteredIndex) ->
+		#remove the children into @allRows
+		removed = row.childCount()
+		filteredIndex = row.index()
+		trueIndex = @getUnfilteredIndex filteredIndex
+		#log.warn "Removing #{removed} rows, starting at #{row.index()} (#{trueIndex})"
+
+		@allRows.splice trueIndex + 1, removed
+
+		#Update @filteredRowsToAllRows
+		#TODO re-sort, filter to get this right
+
+		#Call @treebox.rowCountChanged
+		@treebox.rowCountChanged filteredIndex + 1, -removed
+
+#A TreeView implements nsITreeView
+class TreeView
+	constructor: (prefData) ->
+		#Root is a virtual row under which all top-level rows belong.
+		@root = new TreeRoot
+		prefData.visitNames (name, loader) =>
+			new TreeRow name, @root, loader
+
+		@.__defineGetter__ 'rowCount', ->
+			@root.visibleRowCount()
+
+	getFilteredRow: (index) ->
+		@root.getFilteredRow index
+
+	getUnfilteredIndex: (index) ->
+		@root.getUnfilteredIndex index
 
 	getCellText: (index, col) ->
 		#log.warn "value: #{index}, #{col.id}"
@@ -125,6 +208,7 @@ class TreeView
 
 	setTree: (treebox) ->
 		@treebox = treebox
+		@root.treebox = treebox
 
 	isEditable: (index, col) ->
 		col.editable
@@ -134,7 +218,8 @@ class TreeView
 		row.isContainer()
 
 	isContainerOpen: (index) ->
-		false
+		row = @getFilteredRow index
+		row.isOpen()
 
 	isContainerEmpty: (index) ->
 		row = @getFilteredRow index
@@ -157,65 +242,38 @@ class TreeView
 	getImgSrc: (index, col) ->
 		null
 
-	getRowProperties: (index, props) ->
+	getRowProperties: (index) ->
 		false
 
-	getCellProperties: (index, col, props) ->
+	getCellProperties: (index, col) ->
 		false
 
-	getColumnProperties: (colId, col, props) ->
+	getColumnProperties: (colId, col) ->
 		false
 
-	cycleHeader: (col, element) ->
-		false
+	cycleHeader: (col) ->
+		log.warn "cycleHeader: #{col.id}"
+		switch col.id
+			when 'preferencespy-namecol' then @sortByName()
+			when 'preferencespy-valuecol' then @sortByValue()
+			when 'preferencespy-typecol' then @sortByType()
+			when 'preferencespy-overwrittencol' then @sortByOverwritten()
+
+	sortByName: ->
+
+	sortByValue: ->
+
+	sortByType: ->
+
+	sortByOverwritten: ->
+
+	getParentIndex: (index) ->
+		@root.parentIndex index
 
 	toggleOpenState: (index) ->
 		return if @isContainerEmpty index
 		row = @getFilteredRow index
-		row.populate()
-
-		if row.isOpen()
-			row.close()
-			@removeChildren row, index
-		else
-			row.open()
-			@insertChildren row, index
-
-	insertChildren: (row, filteredIndex) ->
-		#Insert the children into @allRows
-		inserted = row.childCount()
-		trueIndex = @getUnfilteredIndex filteredIndex
-		#log.warn "Inserting #{inserted} rows, starting at #{filteredIndex} (#{trueIndex})"
-
-		newRows = row.children
-		for i in [0 ... inserted]
-			@allRows.splice trueIndex + 1 + i, 0, newRows[i]
-
-		#Update @rowCount
-		@rowCount += inserted
-
-		#Update @filteredRowsToAllRows
-		#TODO re-sort, filter to get this right
-
-		#Call @treebox.rowCountChanged
-		@treebox.rowCountChanged filteredIndex + 1, inserted
-
-	removeChildren: (row, filteredIndex) ->
-		#remove the children into @allRows
-		removed = row.childCount()
-		trueIndex = @getUnfilteredIndex filteredIndex
-		#log.warn "Removing #{removed} rows, starting at #{filteredIndex} (#{trueIndex})"
-
-		@allRows.splice trueIndex + 1, removed
-
-		#Update @rowCount
-		@rowCount -= removed
-
-		#Update @filteredRowsToAllRows
-		#TODO re-sort, filter to get this right
-
-		#Call @treebox.rowCountChanged
-		@treebox.rowCountChanged filteredIndex + 1, -removed
-
+		row.toggleOpen()
+		@treebox.invalidateRow index
 
 module.exports = TreeView
