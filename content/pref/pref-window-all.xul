@@ -31,32 +31,78 @@
     <!-- This main vbox is to ensure *all* the pref widgets are accessible,
          as it adds a scrollbar when the contents are too long. -->
 
-	<!-- TODO let each treecol observe a sort command -->
-
     <vbox id="preferencespy-prefs-vbox" flex="1" class="autoscroll">
-		<tree id="preferencespy-tree"
-			  flex="1"
-			  >
-			<treecols>
-				<treecol id="preferencespy-namecol"
-						 label="Name"
-						 primary="true"
-						 sort="Name"
-						 flex="1"/>
-				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-valuecol"
-						 label="Value"
-						 flex="1"/>
-				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-typecol"
-						 label="Type" />
-				<splitter class="tree-splitter"/>
-				<treecol id="preferencespy-overwrittencol"
-						 label="Overwritten" />
-			</treecols>
-			<treechildren id="preferencespy-prefs-children">
-			</treechildren>
-		</tree>
+		<groupbox>
+			<caption label="Search Preferences"/>
+			<vbox>
+				<hbox>
+					<label value="Name:"/>
+					<textbox id="preferencespy-search-forname-text" flex="1"/>
+					<menulist id="preferencespy-search-forname-type">
+					  <menupopup>
+						<menuitem label="plain" value="plain"/>
+						<menuitem label="regex" value="regex"/>
+					  </menupopup>
+					</menulist>
+				</hbox>
+				<hbox>
+					<label value="Value:"/>
+					<textbox id="preferencespy-search-forvalue-text" flex="1"/>
+					<menulist id="preferencespy-search-forvalue-type">
+					  <menupopup>
+						<menuitem label="plain" value="plain"/>
+						<menuitem label="regex" value="regex"/>
+					  </menupopup>
+					</menulist>
+				</hbox>
+				<hbox>
+					<label value="Type:"/>
+					<menulist id="preferencespy-search-fortype">
+					  <menupopup>
+						<menuitem label="any" value="any"/>
+						<menuitem label="boolean" value="boolean"/>
+						<menuitem label="double" value="double"/>
+						<menuitem label="long" value="long"/>
+						<menuitem label="object" value="object"/>
+						<menuitem label="string" value="string"/>
+					  </menupopup>
+					</menulist>
+				</hbox>
+				<hbox>
+					<label value="State:"/>
+					<menulist id="preferencespy-search-forstate">
+					  <menupopup>
+						<menuitem label="any" value="any"/>
+						<menuitem label="inherited" value="inherited"/>
+						<menuitem label="overwritten" value="overwritten"/>
+					  </menupopup>
+					</menulist>
+				</hbox>
+			</vbox>
+				<button label="Search" oncommand="PreferenceSpy_DoSearch()"/>
+		</groupbox>
+			<tree id="preferencespy-tree"
+				  flex="1"
+				  >
+				<treecols>
+					<treecol id="preferencespy-namecol"
+							 label="Name"
+							 primary="true"
+							 flex="1"/>
+					<splitter class="tree-splitter"/>
+					<treecol id="preferencespy-valuecol"
+							 label="Value"
+							 flex="1"/>
+					<splitter class="tree-splitter"/>
+					<treecol id="preferencespy-typecol"
+							 label="Type" />
+					<splitter class="tree-splitter"/>
+					<treecol id="preferencespy-overwrittencol"
+							 label="Overwritten" />
+				</treecols>
+				<treechildren id="preferencespy-prefs-children">
+				</treechildren>
+			</tree>
     </vbox>
 
 </window>

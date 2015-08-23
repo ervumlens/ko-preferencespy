@@ -5,6 +5,7 @@ log = require('ko/logging').getLogger 'preference-spy'
 TreeRow 	= require 'preferencespy/pref/tree-row'
 TreeRoot	= require 'preferencespy/pref/tree-root'
 Sorter		= require 'preferencespy/pref/sorter'
+FilterRules	= require 'preferencespy/pref/filter-rules'
 
 COLID_NAME  = 'preferencespy-namecol'
 COLID_VALUE = 'preferencespy-valuecol'
@@ -140,5 +141,10 @@ class TreeView
 		row = @getFilteredRow index
 		row.toggleOpen()
 		@treebox.invalidateRow index
+
+	doSearch: ->
+		rules = new FilterRules
+		rules.load()
+		@root.filter rules
 
 module.exports = TreeView

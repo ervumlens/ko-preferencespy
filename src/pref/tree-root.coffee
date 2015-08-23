@@ -77,6 +77,7 @@ class TreeRoot extends TreeRow
 			@sorter.reverse()
 			direction = if @sorter.reversed then 'descending' else 'ascending'
 		else
+			@sortCol = col
 			@sorter = sorter.clone()
 			direction = 'ascending'
 
@@ -90,6 +91,7 @@ class TreeRoot extends TreeRow
 			@treebox.endUpdateBatch()
 
 	updateColumnSortUI: (col, direction) ->
+		return unless col
 		tree = document.getElementById 'preferencespy-tree'
 		columns = col.columns
 		tree.setAttribute 'sortResource', col.id
@@ -101,5 +103,27 @@ class TreeRoot extends TreeRow
 
 		col.element.setAttribute 'sortDirection', direction
 		tree.setAttribute 'sortDirection', direction
+
+	filter: (rules) ->
+		@filterAndSort rules, @sorter, true
+
+	filterAndSort: (rules, sorter, recycleSorter) ->
+
+		if not recycleSorter
+			if @sorter.id is sorter.id
+				@sorter.reverse()
+			else
+				@sorter = sorter.clone()
+
+		direction = if @sorter.reversed then 'descending' else 'ascending'
+
+		@treebox.beginUpdateBatch()
+		try
+			super rules, @sorter
+		catch e
+			log.exception "Problem with filter/sort: " + e
+		finally
+			@updateColumnSortUI @sortCol, direction
+			@treebox.endUpdateBatch()
 
 module.exports = TreeRoot
