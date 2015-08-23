@@ -85,7 +85,8 @@ class TreeRoot extends TreeRow
 		try
 			super @sorter
 		catch e
-			log.exception "Problem sorting: " + e
+			log.error "Problem sorting: " + e
+			log.exception e
 		finally
 			@updateColumnSortUI col, direction
 			@treebox.endUpdateBatch()
@@ -121,7 +122,8 @@ class TreeRoot extends TreeRow
 		try
 			super rules, @sorter
 		catch e
-			log.exception "Problem with filter/sort: " + e
+			log.error "Problem with filter/sort: " + e
+			log.exception e
 		finally
 			@updateColumnSortUI @sortCol, direction
 			@treebox.endUpdateBatch()

@@ -165,29 +165,7 @@ class TreeRow
 		for child in children
 			@addChild child
 
-	filter: (rules) ->
-		#Filtering works a bit like sort: We can't monkey
-		#with the children unless we yank them all out and
-		#then put them back in.
-
-		#Get a list of all children, visible or otherwise.
-		allChildren = []
-		allChildren.push child for name, child of @nameToChild
-
-		#Don't mess with filtering nested rows.
-		@closeChildren()
-
-		#Pulling in a new set of children
-		@clearChildren()
-
-		#We want to show only good children who follow the rules!
-		for child in allChildren
-			@addChild(child) if rules.accepts child
-
 	filterAndSort: (rules, sorter) ->
-		#The filter(rules) function can't sort because it
-		#doesn't have a sorter! Call filterAndSort for most purposes.
-
 		#Filtering works a bit like sort: We can't monkey
 		#with the children unless we yank them all out and
 		#then put them back in.
