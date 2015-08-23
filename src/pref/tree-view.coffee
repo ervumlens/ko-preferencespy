@@ -6,13 +6,41 @@ TreeRow 	= require 'preferencespy/pref/tree-row'
 TreeRoot	= require 'preferencespy/pref/tree-root'
 Sorter		= require 'preferencespy/pref/sorter'
 
+COLID_NAME  = 'preferencespy-namecol'
+COLID_VALUE = 'preferencespy-valuecol'
+COLID_TYPE  = 'preferencespy-typecol'
+COLID_STATE = 'preferencespy-overwrittencol'
+
+nameSorter  = new Sorter COLID_NAME, (a, b) ->
+	a.getName() > b.getName()
+
+valueSorter = new Sorter COLID_VALUE, (a, b) ->
+	astr = a.getValueString()
+	bstr = b.getValueString()
+	if astr is bstr
+		a.getName() > b.getName()
+	else
+		astr > bstr
+
+typeSorter  = new Sorter COLID_TYPE, (a, b) ->
+	atype = a.getType()
+	btype = b.getType()
+	if atype is btype
+		a.getName() > b.getName()
+	else
+		atype > btype
+
+stateSorter = new Sorter COLID_STATE, (a, b) ->
+	astate = a.getOverwritten()
+	bstate = b.getOverwritten()
+	if astate is bstate
+		a.getName() > b.getName()
+	else
+		astate > bstate
+
 #A TreeView implements nsITreeView
 class TreeView
 	sorted: false
-	nameSorter: 	new Sorter (row0, row1) -> row0.getName() > row1.getName()
-	valueSorter: 	new Sorter (row0, row1) -> row0.getValueString() > row1.getValueString()
-	typeSorter: 	new Sorter (row0, row1) -> row0.getType() > row1.getType()
-	overwrittenSorter: new Sorter (row0, row1) -> row0.getOverwritten() > row1.getOverwritten()
 
 	constructor: (prefData) ->
 		#Root is a virtual row under which all top-level rows belong.
@@ -82,28 +110,27 @@ class TreeView
 		false
 
 	cycleHeader: (col) ->
-		log.warn "cycleHeader: #{col.id}"
 		switch col.id
-			when 'preferencespy-namecol' then @sortByName(col)
-			when 'preferencespy-valuecol' then @sortByValue(col)
-			when 'preferencespy-typecol' then @sortByType(col)
-			when 'preferencespy-overwrittencol' then @sortByOverwritten(col)
-
+			when COLID_NAME  then @sortByName(col)
+			when COLID_VALUE then @sortByValue(col)
+			when COLID_TYPE  then @sortByType(col)
+			when COLID_STATE then @sortByState(col)
 
 	doSort: (sorter, col) ->
 		@root.sort sorter, col
+		@sorted = true
 
 	sortByName: (col) ->
-		@doSort @nameSorter, col
+		@doSort nameSorter, col
 
 	sortByValue: (col) ->
-		@doSort @valueSorter, col
+		@doSort valueSorter, col
 
 	sortByType: (col) ->
-		@doSort @typeSorter, col
+		@doSort typeSorter, col
 
-	sortByOverwritten: (col) ->
-		@doSort @overwrittenSorter, col
+	sortByState: (col) ->
+		@doSort stateSorter, col
 
 	getParentIndex: (index) ->
 		@root.parentIndex index

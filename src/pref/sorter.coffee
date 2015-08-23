@@ -6,7 +6,7 @@ log = require('ko/logging').getLogger 'preference-spy'
 class Sorter
 	reversed: false
 
-	constructor: (@comparator) ->
+	constructor: (@id, @comparator) ->
 
 	apply: (array) ->
 		if @reversed
@@ -17,5 +17,8 @@ class Sorter
 
 	reverse: ->
 		@reversed = not @reversed
+
+	clone: ->
+		new Sorter @id, @comparator
 
 module.exports = Sorter
