@@ -52,15 +52,12 @@ class TreeView
 		@.__defineGetter__ 'rowCount', ->
 			@root.visibleRowCount()
 
-	getFilteredRow: (index) ->
-		@root.getFilteredRow index
-
-	getUnfilteredIndex: (index) ->
-		@root.getUnfilteredIndex index
+	rowAt: (index) ->
+		@root.rowAt index
 
 	getCellText: (index, col) ->
 		#log.warn "value: #{index}, #{col.id}"
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.getText col
 
 	getCellValue: (index, col) ->
@@ -74,15 +71,15 @@ class TreeView
 		col.editable
 
 	isContainer: (index) ->
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.isContainer()
 
 	isContainerOpen: (index) ->
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.isOpen()
 
 	isContainerEmpty: (index) ->
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.isContainerEmpty()
 
 	isSeparator: (index) ->
@@ -92,7 +89,7 @@ class TreeView
 		@sorted
 
 	getLevel: (index) ->
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.depth
 
 	hasNextSibling: (index, afterIndex) ->
@@ -138,7 +135,7 @@ class TreeView
 
 	toggleOpenState: (index) ->
 		return if @isContainerEmpty index
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.toggleOpen()
 		@treebox.invalidateRow index
 

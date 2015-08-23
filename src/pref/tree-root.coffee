@@ -26,11 +26,8 @@ class TreeRoot extends TreeRow
 	visibleRowCount: ->
 		@allRows.length
 
-	getFilteredRow: (index) ->
+	rowAt: (index) ->
 		@allRows[index]
-
-	getUnfilteredIndex: (index) ->
-		index
 
 	isOpen: ->
 		true
@@ -39,36 +36,29 @@ class TreeRoot extends TreeRow
 	close: ->
 
 	parentIndex: (index) ->
-		@getFilteredRow(index).parentIndex()
+		@rowAt(index).parentIndex()
 
 	insertChildren: (row) ->
-		#Insert the children into @allRows
+		#Insert the children of the given row into @allRows
 		inserted = row.childCount()
-		filteredIndex = row.index()
-		trueIndex = @getUnfilteredIndex filteredIndex
-		#log.warn "Inserting #{inserted} rows, starting at #{row.index()} (#{trueIndex})"
+		index = row.index()
 
 		newRows = row.children
 		for i in [0 ... inserted]
-			@allRows.splice trueIndex + 1 + i, 0, newRows[i]
+			@allRows.splice index + 1 + i, 0, newRows[i]
 
-		#Call @treebox.rowCountChanged
-		@treebox.rowCountChanged filteredIndex + 1, inserted
+		@treebox.rowCountChanged index + 1, inserted
 
-	removeChildren: (row, filteredIndex) ->
-		#remove the children into @allRows
+	removeChildren: (row) ->
+		#remove the children of the given row from @allRows
 		removed = row.childCount()
-		filteredIndex = row.index()
-		trueIndex = @getUnfilteredIndex filteredIndex
-		#log.warn "Removing #{removed} rows, starting at #{row.index()} (#{trueIndex})"
+		index = row.index()
 
-		@allRows.splice trueIndex + 1, removed
-
-		#Call @treebox.rowCountChanged
-		@treebox.rowCountChanged filteredIndex + 1, -removed
+		@allRows.splice index + 1, removed
+		@treebox.rowCountChanged index + 1, -removed
 
 	hasNextSibling: (index) ->
-		row = @getFilteredRow index
+		row = @rowAt index
 		row.nextSibling?
 
 	sort: (sorter, col) ->
