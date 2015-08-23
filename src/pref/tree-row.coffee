@@ -43,6 +43,8 @@ class TreeRow
 		@lastChild = childRow
 
 	clearChildren: ->
+		return unless @hasChildren()
+	
 		#Never clear @nameToChild. It only caches
 		#the children and is not involved in UI decisions.
 
@@ -124,6 +126,9 @@ class TreeRow
 	isOpen: ->
 		@isContainer() and @containerState is 'open'
 
+	hasChildren: ->
+		@children?.length > 0
+
 	open: ->
 		return if @isOpen()
 
@@ -143,11 +148,11 @@ class TreeRow
 		@root.removeChildren @
 
 	closeChildren: ->
-		return unless @isOpen()
+		return unless @isOpen() and @hasChildren()
 		child.close() for child in @children
 
 	sort: (sorter) ->
-		return unless @isOpen()
+		return unless @isOpen() and @hasChildren()
 
 		#Don't mess with sorting nested rows.
 		#Just close everyone up.
@@ -166,6 +171,8 @@ class TreeRow
 			@addChild child
 
 	filterAndSort: (rules, sorter) ->
+		return unless @isOpen()
+
 		#Filtering works a bit like sort: We can't monkey
 		#with the children unless we yank them all out and
 		#then put them back in.
