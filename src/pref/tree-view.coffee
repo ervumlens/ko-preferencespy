@@ -44,8 +44,17 @@ class TreeRow
 
 		@lastChild = childRow
 
+	clearChildren: ->
+		for child in @children
+			child.nextSibling = null
+			child.prevSibling = null
+
+		@lastChild = null
+		@children = null
+
 	load: ->
-		values = @loader @name, @
+		@loader @name, @
+		@valueString = @value.toString()
 		@load = ->
 
 	getText: (col) ->
@@ -65,6 +74,10 @@ class TreeRow
 	getValue: ->
 		@load()
 		@value
+
+	getValueString: ->
+		@load()
+		@valueString
 
 	getType: ->
 		@load()
@@ -103,11 +116,12 @@ class TreeRow
 			@open()
 
 	isOpen: ->
-		return false unless @isContainer()
-		@state is 'open'
+		@isContainer() and @state is 'open'
 
 	open: ->
 		return if @isOpen()
+
+		@sort @root.sorter
 
 		@state = 'open'
 		@root.insertChildren @
@@ -116,12 +130,34 @@ class TreeRow
 		return unless @isOpen()
 
 		@state = 'closed'
-		#Close all children first. This ensures
-		#our numbers add up.
-		child.close() for child in @children
+		# Close all children first. This ensures
+		# our numbers add up.
+		@closeChildren()
 
 		@root.removeChildren @
 
+	closeChildren: ->
+		return unless @isOpen()
+		child.close() for child in @children
+
+	sort: (sorter) ->
+		return unless @isOpen()
+
+		#Don't mess with sorting nested rows.
+		#Just close everyone up.
+		@closeChildren()
+
+		# Children are stored in @children, but also
+		# linked to one another. To sort, we have
+		# to clear both our state and the child links.
+
+		children = @children
+		@clearChildren()
+
+		sorter.apply children
+
+		for child in children
+			@addChild child
 
 class TreeRoot extends TreeRow
 	allRows: []
@@ -137,6 +173,10 @@ class TreeRoot extends TreeRow
 		super
 		@allRows.push childRow
 
+	clearChildren: ->
+		super
+		@allRows = []
+
 	visibleRowCount: ->
 		@allRows.length
 
@@ -145,6 +185,12 @@ class TreeRoot extends TreeRow
 
 	getUnfilteredIndex: (index) ->
 		index
+
+	isOpen: ->
+		true
+
+	open: ->
+	close: ->
 
 	parentIndex: (index) ->
 		@getFilteredRow(index).parentIndex()
@@ -160,9 +206,6 @@ class TreeRoot extends TreeRow
 		for i in [0 ... inserted]
 			@allRows.splice trueIndex + 1 + i, 0, newRows[i]
 
-		#Update @filteredRowsToAllRows
-		#TODO re-sort, filter to get this right
-
 		#Call @treebox.rowCountChanged
 		@treebox.rowCountChanged filteredIndex + 1, inserted
 
@@ -175,14 +218,68 @@ class TreeRoot extends TreeRow
 
 		@allRows.splice trueIndex + 1, removed
 
-		#Update @filteredRowsToAllRows
-		#TODO re-sort, filter to get this right
-
 		#Call @treebox.rowCountChanged
 		@treebox.rowCountChanged filteredIndex + 1, -removed
 
+	hasNextSibling: (index) ->
+		row = @getFilteredRow index
+		row.nextSibling?
+
+	sort: (sorter, col) ->
+		tree = document.getElementById 'preferencespy-tree'
+		columns = col.columns
+
+		if @sorter is sorter
+			@sorter.reverse()
+			direction = if @sorter.reversed then 'descending' else 'ascending'
+
+			col.element.setAttribute 'sortDirection', direction
+			tree.setAttribute 'sortDirection', direction
+		else
+			#Clear all sort attributes everywhere
+			for i in [0 ... columns.length]
+				otherCol = columns.getColumnAt(i)
+				otherCol.element.removeAttribute 'sortDirection'
+
+			col.element.setAttribute 'sortDirection', 'ascending'
+			tree.setAttribute 'sortDirection', 'ascending'
+			tree.setAttribute 'sortResource', col.id
+
+			@sorter = sorter
+
+		@treebox.beginUpdateBatch()
+		try
+			super
+			@sorted = true
+		catch e
+			log.exception "Problem sorting: " + e
+		finally
+			@treebox.endUpdateBatch()
+
+
+class Sorter
+	reversed: false
+
+	constructor: (@comparator) ->
+
+	apply: (array) ->
+		if @reversed
+			comparator = @comparator
+			array.sort (a, b) -> comparator b, a
+		else
+			array.sort @comparator
+
+	reverse: ->
+		@reversed = not @reversed
+
 #A TreeView implements nsITreeView
 class TreeView
+	sorted: false
+	nameSorter: 	new Sorter (row0, row1) -> row0.getName() > row1.getName()
+	valueSorter: 	new Sorter (row0, row1) -> row0.getValueString() > row1.getValueString()
+	typeSorter: 	new Sorter (row0, row1) -> row0.getType() > row1.getType()
+	overwrittenSorter: new Sorter (row0, row1) -> row0.getOverwritten() > row1.getOverwritten()
+
 	constructor: (prefData) ->
 		#Root is a virtual row under which all top-level rows belong.
 		@root = new TreeRoot
@@ -229,15 +326,14 @@ class TreeView
 		false
 
 	isSorted: ->
-		false
+		@sorted
 
 	getLevel: (index) ->
 		row = @getFilteredRow index
 		row.depth
 
 	hasNextSibling: (index, afterIndex) ->
-		row = @getFilteredRow index
-		row.next?
+		@root.hasNextSibling index
 
 	getImgSrc: (index, col) ->
 		null
@@ -254,18 +350,26 @@ class TreeView
 	cycleHeader: (col) ->
 		log.warn "cycleHeader: #{col.id}"
 		switch col.id
-			when 'preferencespy-namecol' then @sortByName()
-			when 'preferencespy-valuecol' then @sortByValue()
-			when 'preferencespy-typecol' then @sortByType()
-			when 'preferencespy-overwrittencol' then @sortByOverwritten()
+			when 'preferencespy-namecol' then @sortByName(col)
+			when 'preferencespy-valuecol' then @sortByValue(col)
+			when 'preferencespy-typecol' then @sortByType(col)
+			when 'preferencespy-overwrittencol' then @sortByOverwritten(col)
 
-	sortByName: ->
 
-	sortByValue: ->
+	doSort: (sorter, col) ->
+		@root.sort sorter, col
 
-	sortByType: ->
+	sortByName: (col) ->
+		@doSort @nameSorter, col
 
-	sortByOverwritten: ->
+	sortByValue: (col) ->
+		@doSort @valueSorter, col
+
+	sortByType: (col) ->
+		@doSort @typeSorter, col
+
+	sortByOverwritten: (col) ->
+		@doSort @overwrittenSorter, col
 
 	getParentIndex: (index) ->
 		@root.parentIndex index

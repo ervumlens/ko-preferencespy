@@ -41,9 +41,7 @@
 				<treecol id="preferencespy-namecol"
 						 label="Name"
 						 primary="true"
-						 sortActive="true"
 						 sort="Name"
-						 sortDirection="ascending"
 						 flex="1"/>
 				<splitter class="tree-splitter"/>
 				<treecol id="preferencespy-valuecol"
