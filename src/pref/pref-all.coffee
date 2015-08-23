@@ -15,67 +15,6 @@ Cc = Components.classes
 Ci = Components.interfaces
 Cu = Components.utils
 
-class ClickTarget
-	constructor: (@tree, @event) ->
-		switch @event.target.localName
-			when 'treechildren'
-				box = @tree.treeBoxObject
-				cell = row: {}, col: {}, child: {}
-				box.getCellAt @event.clientX, @event.clientY, @cell.row, @cell.col, @cell.child
-				@click = => @showCellMenu cell
-			when 'treecol'
-				attributes = @event.target.attributes
-				for i in [0 ... attributes.length]
-					name = attributes[i].name
-					value = attributes[i].value
-					log.warn "@event.target.attributes[#{i}] = (#{name},#{value})"
-
-				#@click = => @sortOnColumn @event.target
-
-	click: ->
-
-	sortOnColumn: (col)->
-		#do sort
-		log.warn "Sorting column..."
-		if col.getAttribute('sortActive') is 'true'
-			log.warn "Toggling sort..."
-			#toggle sorting
-			if col.getAttribute('sortDirection') is 'ascending'
-				log.warn "Sort descending"
-				col.removeAttribute 'sortActive'
-				col.removeAttribute 'sortDirection'
-				col.removeAttribute 'flex'
-				col.setAttribute 'sortActive', 'true'
-				col.setAttribute 'sortDirection', 'descending'
-			else
-				log.warn "Sort ascending"
-				col.removeAttribute 'sortActive'
-				col.removeAttribute 'sortDirection'
-				col.removeAttribute 'flex'
-				col.setAttribute 'sortActive', 'true'
-				col.setAttribute 'sortDirection', 'ascending'
-		else
-			#TODO find the active one and deactivate it
-			log.warn "New sort column..."
-		true
-
-	showCellMenu: (cell)->
-		#show select all/copy prompt
-		log.warn "Showing context menu..."
-		true
-
-@PreferenceSpy_onTreeClicked = (tree, event) ->
-	#target = new ClickTarget tree, event
-	#target.click()
-
-	#log.warn ">>"
-	#log.warn event.target.localName
-	#log.warn event.currentTarget.localName
-	#log.warn event.originalTarget.localName
-	#log.warn event.explicitOriginalTarget.localName
-	#log.warn "<<"
-	#log.warn "clicked on #{inf.row.value} #{inf.col.value} #{inf.child.value}"
-
 @OnPreferencePageLoading = (rawPrefset) ->
 	#log.warn 'PreferenceSpy::OnPreferencePageLoading!'
 	context = parent.prefInvokeType

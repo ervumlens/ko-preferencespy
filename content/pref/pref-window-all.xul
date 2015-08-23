@@ -36,7 +36,6 @@
     <vbox id="preferencespy-prefs-vbox" flex="1" class="autoscroll">
 		<tree id="preferencespy-tree"
 			  flex="1"
-			  onclick="PreferenceSpy_onTreeClicked(this, event)"
 			  >
 			<treecols>
 				<treecol id="preferencespy-namecol"
