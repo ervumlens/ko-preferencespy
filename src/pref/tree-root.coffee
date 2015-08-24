@@ -6,7 +6,6 @@ Sorter = require 'preferencespy/pref/sorter'
 
 class TreeRoot extends TreeRow
 	allRows: []
-	sorter: new Sorter null, -> false
 
 	constructor: ->
 		@root = @
@@ -61,60 +60,4 @@ class TreeRoot extends TreeRow
 		row = @rowAt index
 		row.nextSibling?
 
-	sort: (sorter, col) ->
-		direction = null
-		if @sorter.id is sorter.id
-			@sorter.reverse()
-			direction = if @sorter.reversed then 'descending' else 'ascending'
-		else
-			@sortCol = col
-			@sorter = sorter.clone()
-			direction = 'ascending'
-
-		@treebox.beginUpdateBatch()
-		try
-			super @sorter
-		catch e
-			log.error "Problem sorting: " + e
-			log.exception e
-		finally
-			@updateColumnSortUI col, direction
-			@treebox.endUpdateBatch()
-
-	updateColumnSortUI: (col, direction) ->
-		return unless col
-		tree = document.getElementById 'preferencespy-tree'
-		columns = col.columns
-		tree.setAttribute 'sortResource', col.id
-
-		#Clear all sort attributes everywhere
-		for i in [0 ... columns.length]
-			otherCol = columns.getColumnAt(i)
-			otherCol.element.removeAttribute 'sortDirection'
-
-		col.element.setAttribute 'sortDirection', direction
-		tree.setAttribute 'sortDirection', direction
-
-	filter: (rules) ->
-		@filterAndSort rules, @sorter, true
-
-	filterAndSort: (rules, sorter, recycleSorter) ->
-
-		if not recycleSorter
-			if @sorter.id is sorter.id
-				@sorter.reverse()
-			else
-				@sorter = sorter.clone()
-
-		direction = if @sorter.reversed then 'descending' else 'ascending'
-
-		count = 0
-		@treebox.beginUpdateBatch()
-		try
-			count = super rules, @sorter
-		finally
-			@updateColumnSortUI @sortCol, direction
-			@treebox.endUpdateBatch()
-		count
-		
 module.exports = TreeRoot

@@ -7,6 +7,7 @@ TreeRoot	= require 'preferencespy/pref/tree-root'
 Sorter		= require 'preferencespy/pref/sorter'
 FilterRules	= require 'preferencespy/pref/filter-rules'
 
+
 COLID_NAME  = 'preferencespy-namecol'
 COLID_VALUE = 'preferencespy-valuecol'
 COLID_TYPE  = 'preferencespy-typecol'
@@ -42,6 +43,7 @@ stateSorter = new Sorter COLID_STATE, (a, b) ->
 #A TreeView implements nsITreeView
 class TreeView
 	sorted: false
+	sorter: new Sorter null, -> false
 
 	constructor: (prefData) ->
 		#Root is a virtual row under which all top-level rows belong.
@@ -66,6 +68,7 @@ class TreeView
 	setTree: (treebox) ->
 		@treebox = treebox
 		@root.treebox = treebox
+		@tree = document.getElementById 'preferencespy-tree'
 
 	isEditable: (index, col) ->
 		col.editable
@@ -114,10 +117,6 @@ class TreeView
 			when COLID_TYPE  then @sortByType(col)
 			when COLID_STATE then @sortByState(col)
 
-	doSort: (sorter, col) ->
-		@root.sort sorter, col
-		@sorted = true
-
 	sortByName: (col) ->
 		@doSort nameSorter, col
 
@@ -146,7 +145,7 @@ class TreeView
 
 		try
 			rules.load()
-			result = @root.filter rules
+			result = @filterAndSort rules, @sorter
 		catch e
 			result = "Error: #{e.message}"
 
@@ -157,5 +156,46 @@ class TreeView
 				else "#{result} matches found."
 		else
 			result.toString()
+
+	doSort: (sorter, col) ->
+
+		if @sorter.id is sorter.id
+			@sorter.reverse()
+		else
+			@sorter = sorter.clone()
+
+		@treebox.beginUpdateBatch()
+		try
+			@root.sort @sorter, col
+			@sorted = true
+		catch e
+			log.error "Problem sorting: " + e
+			log.exception e
+		finally
+			@updateColumnSortUI @sorter, col
+			@treebox.endUpdateBatch()
+
+	filterAndSort: (rules, sorter) ->
+		count = 0
+		@treebox.beginUpdateBatch()
+		try
+			count = @root.filterAndSort rules, sorter
+		finally
+			@treebox.endUpdateBatch()
+		count
+
+	updateColumnSortUI: (sorter, col) ->
+		return unless col
+		columns = col.columns
+		direction = sorter.direction
+		@tree.setAttribute 'sortResource', col.id
+
+		#Clear all sort attributes everywhere
+		for i in [0 ... columns.length]
+			otherCol = columns.getColumnAt(i)
+			otherCol.element.removeAttribute 'sortDirection'
+
+		col.element.setAttribute 'sortDirection', direction
+		@tree.setAttribute 'sortDirection', direction
 
 module.exports = TreeView
