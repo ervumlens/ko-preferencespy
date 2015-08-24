@@ -44,7 +44,7 @@ class TreeRow
 
 	clearChildren: ->
 		return unless @hasChildren()
-	
+
 		#Never clear @nameToChild. It only caches
 		#the children and is not involved in UI decisions.
 
@@ -140,11 +140,11 @@ class TreeRow
 	close: ->
 		return unless @isOpen()
 
-		@containerState = 'closed'
 		# Close all children first. This ensures
 		# our numbers add up.
 		@closeChildren()
 
+		@containerState = 'closed'
 		@root.removeChildren @
 
 	closeChildren: ->
