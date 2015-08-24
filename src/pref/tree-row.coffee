@@ -171,7 +171,7 @@ class TreeRow
 			@addChild child
 
 	filterAndSort: (rules, sorter) ->
-		return unless @isOpen()
+		return 0 unless @isOpen()
 
 		#Filtering works a bit like sort: We can't monkey
 		#with the children unless we yank them all out and
@@ -198,5 +198,6 @@ class TreeRow
 		for child in goodChildren
 			@addChild child
 
+		goodChildren.length
 
 module.exports = TreeRow

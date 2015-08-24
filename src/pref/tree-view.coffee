@@ -140,8 +140,22 @@ class TreeView
 		@treebox.invalidateRow index
 
 	doSearch: ->
+		msg = document.getElementById 'preferencespy-search-message'
 		rules = new FilterRules
-		rules.load()
-		@root.filter rules
+		result = null
+
+		try
+			rules.load()
+			result = @root.filter rules
+		catch e
+			result = "Error: #{e.message}"
+
+		msg.textContent = if typeof result is 'number'
+			switch result
+				when 0 then 'No matches found.'
+				when 1 then '1 match found.'
+				else "#{result} matches found."
+		else
+			result.toString()
 
 module.exports = TreeView

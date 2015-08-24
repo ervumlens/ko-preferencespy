@@ -42,7 +42,7 @@
 				<rows>
 					<row align="center">
 						<label value="Name:" control="preferencespy-search-forname-text"/>
-						<textbox id="preferencespy-search-forname-text" flex="1"/>
+						<textbox id="preferencespy-search-forname-text" flex="1" placeholder="(any)"/>
 						<menulist id="preferencespy-search-forname-type">
 						  <menupopup>
 							<menuitem label="plain" value="plain"/>
@@ -52,7 +52,7 @@
 					</row>
 					<row align="center">
 						<label value="Value:" control="preferencespy-search-forvalue-text"/>
-						<textbox id="preferencespy-search-forvalue-text" flex="1"/>
+						<textbox id="preferencespy-search-forvalue-text" flex="1" placeholder="(any)"/>
 						<menulist id="preferencespy-search-forvalue-type">
 						  <menupopup>
 							<menuitem label="plain" value="plain"/>
@@ -65,7 +65,7 @@
 						<hbox align="center">
 							<menulist id="preferencespy-search-fortype">
 							  <menupopup>
-								<menuitem label="any" value="any"/>
+								<menuitem label="(any)" value="any"/>
 								<menuitem label="boolean" value="boolean"/>
 								<menuitem label="double" value="double"/>
 								<menuitem label="long" value="long"/>
@@ -76,7 +76,7 @@
 							<label value="State:" control="preferencespy-search-forstate-text"/>
 							<menulist id="preferencespy-search-forstate">
 							  <menupopup>
-								<menuitem label="any" value="any"/>
+								<menuitem label="(any)" value="any"/>
 								<menuitem label="inherited" value="inherited"/>
 								<menuitem label="overwritten" value="overwritten"/>
 							  </menupopup>
@@ -86,10 +86,11 @@
 					<row>
 					<spacer height="20"/>
 					</row>
-					<row>
+					<row align="center">
 						<spacer/>
-						<hbox>
+						<hbox  align="center">
 							<button label="Search" oncommand="PreferenceSpy_DoSearch()"/>
+							<description id="preferencespy-search-message" flex="1"/>
 						</hbox>
 					</row>
 				</rows>

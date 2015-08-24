@@ -108,14 +108,13 @@ class TreeRoot extends TreeRow
 
 		direction = if @sorter.reversed then 'descending' else 'ascending'
 
+		count = 0
 		@treebox.beginUpdateBatch()
 		try
-			super rules, @sorter
-		catch e
-			log.error "Problem with filter/sort: " + e
-			log.exception e
+			count = super rules, @sorter
 		finally
 			@updateColumnSortUI @sortCol, direction
 			@treebox.endUpdateBatch()
-
+		count
+		
 module.exports = TreeRoot
