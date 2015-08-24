@@ -139,7 +139,6 @@ class TreeView
 		@treebox.invalidateRow index
 
 	doSearch: ->
-		msg = document.getElementById 'preferencespy-search-message'
 		rules = new FilterRules
 		result = null
 
@@ -149,7 +148,7 @@ class TreeView
 		catch e
 			result = "Error: #{e.message}"
 
-		msg.textContent = if typeof result is 'number'
+		if typeof result is 'number'
 			switch result
 				when 0 then 'No matches found.'
 				when 1 then '1 match found.'

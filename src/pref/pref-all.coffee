@@ -15,7 +15,7 @@ Cc = Components.classes
 Ci = Components.interfaces
 Cu = Components.utils
 
-view = null
+treeView = null
 
 @OnPreferencePageLoading = (rawPrefset) ->
 	#log.warn 'PreferenceSpy::OnPreferencePageLoading!'
@@ -26,7 +26,7 @@ view = null
 
 	prefData = new PrefData(rawPrefset)
 	tree = document.getElementById 'preferencespy-tree'
-	view = tree.view = new TreeView prefData
+	treeView = tree.view = new TreeView prefData
 
 	#root = document.getElementById 'preferencespy-prefs-children'
 	#prefData.addChildren root
@@ -39,4 +39,6 @@ view = null
 	parent.initPanel()
 
 @PreferenceSpy_DoSearch = ->
-	view.doSearch()
+	msg = document.getElementById 'preferencespy-search-message'
+	result = treeView.doSearch()
+	msg.textContent = result
