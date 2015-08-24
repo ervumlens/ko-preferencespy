@@ -34,52 +34,66 @@
     <vbox id="preferencespy-prefs-vbox" flex="1" class="autoscroll">
 		<groupbox>
 			<caption label="Search Preferences"/>
-			<vbox>
-				<hbox>
-					<label value="Name:"/>
-					<textbox id="preferencespy-search-forname-text" flex="1"/>
-					<menulist id="preferencespy-search-forname-type">
-					  <menupopup>
-						<menuitem label="plain" value="plain"/>
-						<menuitem label="regex" value="regex"/>
-					  </menupopup>
-					</menulist>
-				</hbox>
-				<hbox>
-					<label value="Value:"/>
-					<textbox id="preferencespy-search-forvalue-text" flex="1"/>
-					<menulist id="preferencespy-search-forvalue-type">
-					  <menupopup>
-						<menuitem label="plain" value="plain"/>
-						<menuitem label="regex" value="regex"/>
-					  </menupopup>
-					</menulist>
-				</hbox>
-				<hbox>
-					<label value="Type:"/>
-					<menulist id="preferencespy-search-fortype">
-					  <menupopup>
-						<menuitem label="any" value="any"/>
-						<menuitem label="boolean" value="boolean"/>
-						<menuitem label="double" value="double"/>
-						<menuitem label="long" value="long"/>
-						<menuitem label="object" value="object"/>
-						<menuitem label="string" value="string"/>
-					  </menupopup>
-					</menulist>
-				</hbox>
-				<hbox>
-					<label value="State:"/>
-					<menulist id="preferencespy-search-forstate">
-					  <menupopup>
-						<menuitem label="any" value="any"/>
-						<menuitem label="inherited" value="inherited"/>
-						<menuitem label="overwritten" value="overwritten"/>
-					  </menupopup>
-					</menulist>
-				</hbox>
-			</vbox>
-				<button label="Search" oncommand="PreferenceSpy_DoSearch()"/>
+			<grid>
+				<columns>
+					<column/>
+					<column flex="1"/>
+				</columns>
+				<rows>
+					<row align="center">
+						<label value="Name:" control="preferencespy-search-forname-text"/>
+						<textbox id="preferencespy-search-forname-text" flex="1"/>
+						<menulist id="preferencespy-search-forname-type">
+						  <menupopup>
+							<menuitem label="plain" value="plain"/>
+							<menuitem label="regex" value="regex"/>
+						  </menupopup>
+						</menulist>
+					</row>
+					<row align="center">
+						<label value="Value:" control="preferencespy-search-forvalue-text"/>
+						<textbox id="preferencespy-search-forvalue-text" flex="1"/>
+						<menulist id="preferencespy-search-forvalue-type">
+						  <menupopup>
+							<menuitem label="plain" value="plain"/>
+							<menuitem label="regex" value="regex"/>
+						  </menupopup>
+						</menulist>
+					</row>
+					<row align="center">
+						<label value="Type:" control="preferencespy-search-fortype-text"/>
+						<hbox align="center">
+							<menulist id="preferencespy-search-fortype">
+							  <menupopup>
+								<menuitem label="any" value="any"/>
+								<menuitem label="boolean" value="boolean"/>
+								<menuitem label="double" value="double"/>
+								<menuitem label="long" value="long"/>
+								<menuitem label="object" value="object"/>
+								<menuitem label="string" value="string"/>
+							  </menupopup>
+							</menulist>
+							<label value="State:" control="preferencespy-search-forstate-text"/>
+							<menulist id="preferencespy-search-forstate">
+							  <menupopup>
+								<menuitem label="any" value="any"/>
+								<menuitem label="inherited" value="inherited"/>
+								<menuitem label="overwritten" value="overwritten"/>
+							  </menupopup>
+							</menulist>
+						</hbox>
+					</row>
+					<row>
+					<spacer height="20"/>
+					</row>
+					<row>
+						<spacer/>
+						<hbox>
+							<button label="Search" oncommand="PreferenceSpy_DoSearch()"/>
+						</hbox>
+					</row>
+				</rows>
+			</grid>
 		</groupbox>
 			<tree id="preferencespy-tree"
 				  flex="1"
