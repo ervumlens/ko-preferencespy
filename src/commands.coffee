@@ -3,6 +3,7 @@
 
 log = require('ko/logging').getLogger 'preference-spy'
 PrefLogger = require 'preferencespy/pref/pref-logger'
+koAlert = require('ko/dialogs').alert
 
 prefLogger = new PrefLogger
 
@@ -71,11 +72,20 @@ disableAllNodes = (cmdset) ->
 	@toggleLogGlobalPreferenceChanges = ->
 		prefLogger.toggleGlobal()
 
-	@toggleLogProjectPreferenceChanges = ->
+	@toggleLogProjectPreferenceChanges = (noAlert) ->
 		prefLogger.toggleProjects()
+		if prefLogger.loggingProjects and not noAlert
+			props =
+				title: 'Logging Project Preference Changes'
+				
+			koAlert 'Only changes to currently existing projects will be logged. Caution: not all project preferences are successfully logged.', props
 
-	@toggleLogFilePreferenceChanges = ->
+	@toggleLogFilePreferenceChanges = (noAlert) ->
 		prefLogger.toggleFiles()
+		if prefLogger.loggingFiles and not noAlert
+			props =
+				title: 'Logging File Preference Changes'
 
+			koAlert 'Note: Only changes to currently existing files will be logged.', props
 
 ).call module.exports
