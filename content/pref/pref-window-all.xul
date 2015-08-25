@@ -46,9 +46,10 @@
 								 flex="1"
 								 placeholder="(any)"
 								 type="search"
-								 searchbutton="true"
+								 timeout="1"
 								 oncommand="PreferenceSpy_DoSearch()"/>
-						<menulist id="preferencespy-search-forname-type">
+						<menulist id="preferencespy-search-forname-type"
+								  oncommand="PreferenceSpy_DoSearch()">
 						  <menupopup>
 							<menuitem label="plain" value="plain"/>
 							<menuitem label="regex" value="regex"/>
@@ -61,9 +62,10 @@
 								 flex="1"
 								 placeholder="(any)"
 								 type="search"
-								 searchbutton="true"
+								 timeout="1"
 								 oncommand="PreferenceSpy_DoSearch()"/>
-						<menulist id="preferencespy-search-forvalue-type">
+						<menulist id="preferencespy-search-forvalue-type"
+								  oncommand="PreferenceSpy_DoSearch()">
 						  <menupopup>
 							<menuitem label="plain" value="plain"/>
 							<menuitem label="regex" value="regex"/>
@@ -73,7 +75,8 @@
 					<row align="center">
 						<label value="Type:" control="preferencespy-search-fortype-text"/>
 						<hbox align="center">
-							<menulist id="preferencespy-search-fortype">
+							<menulist id="preferencespy-search-fortype"
+									  oncommand="PreferenceSpy_DoSearch()">
 							  <menupopup>
 								<menuitem label="(any)" value="any"/>
 								<menuitem label="boolean" value="boolean"/>
@@ -84,22 +87,14 @@
 							  </menupopup>
 							</menulist>
 							<label value="State:" control="preferencespy-search-forstate-text"/>
-							<menulist id="preferencespy-search-forstate">
+							<menulist id="preferencespy-search-forstate"
+									  oncommand="PreferenceSpy_DoSearch()">
 							  <menupopup>
 								<menuitem label="(any)" value="any"/>
 								<menuitem label="inherited" value="inherited"/>
 								<menuitem label="overwritten" value="overwritten"/>
 							  </menupopup>
 							</menulist>
-						</hbox>
-					</row>
-					<row>
-					<spacer height="20"/>
-					</row>
-					<row align="center">
-						<spacer/>
-						<hbox  align="center">
-							<button label="Search" oncommand="PreferenceSpy_DoSearch()"/>
 							<description id="preferencespy-search-message" flex="1"/>
 						</hbox>
 					</row>
