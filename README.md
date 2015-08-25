@@ -14,13 +14,11 @@ and a "All (Read-Only)" page in the Preferences dialog.
 Preference Spy has two main functions: viewing all preferences and monitoring preference changes.
 
 To view all preferences, simply open a Preferences dialog, enable the "Show Advanced" option,
-and click on the "All (Read-Only)"
+and click on the "All (Read-Only)".
 
 To monitor preference changes, open the "Preference Spy" menu under "Tools",
 and enable the "Log Preference Changes" option. Now preference changes will be logged to Komodo's
 standard error log.
-
-Note that the scope of the changed preference (e.g. global scope, project scope, etc.) is not logged.
 
 ###Build
 
