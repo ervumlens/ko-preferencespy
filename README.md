@@ -17,7 +17,7 @@ To view all preferences, simply open a Preferences dialog, enable the "Show Adva
 and click on the "All (Read-Only)".
 
 To monitor preference changes, open the "Preference Spy" menu under "Tools",
-and enable the "Log Preference Changes" option. Now preference changes will be logged to Komodo's
+and choose a "Log (whatever) Pref Changes" option. Now preference changes will be logged to Komodo's
 standard error log.
 
 ###Build
