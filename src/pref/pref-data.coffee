@@ -14,6 +14,18 @@ extractObjectValue = (container) ->
 	catch e
 		#log.warn e
 
+	try
+		container.QueryInterface Ci.koIPreferenceChild
+		log.warn "Encountered koIPreferenceChild"
+	catch e
+		#log.warn e
+
+	try
+		cache = container.QueryInterface Ci.koIPreferenceCache
+		return new PreferenceCache cache
+	catch e
+		#log.warn e
+
 	log.warn "Unknown container type encountered: id = #{container.id}"
 
 	new PreferenceContainer
@@ -29,6 +41,9 @@ class PreferenceContainer
 		log.warn "Called 'visitNames' on a mystery container"
 
 	getValueForId: (id, type) ->
+		if not type
+			type = @container.getPrefType id
+
 		switch type
 			when 'string' then @container.getStringPref id
 			when 'boolean' then @container.getBooleanPref id
@@ -80,6 +95,22 @@ class OrderedPreference extends PreferenceContainer
 		for id in [0 ... @count]
 			visitor id, (args...) => @fetchValues args...
 
+class PreferenceCache extends PreferenceContainer
+	constructor: (@container) ->
+		@count = @container.length
+		@name = '(empty)' if @isEmpty()
+
+	visitNames: (visitor) ->
+		e = @container.enumPreferences()
+		while e.hasMoreElements()
+			prefId = e.getNext().id
+			visitor prefId, (id, target) => @fetchValues id, target
+
+	fetchValues: (id, target) ->
+		target.type = 'object'
+		target.value = '(container)'
+		target.container = extractObjectValue @container.getPref(id)
+
 module.exports = class PrefData
 	meta: []
 
@@ -94,3 +125,6 @@ module.exports = class PrefData
 
 	visitNames: (visitor) ->
 		@root.visitNames visitor
+
+	@getContainer: (prefset) ->
+		extractObjectValue prefset

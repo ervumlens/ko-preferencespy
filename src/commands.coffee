@@ -1,8 +1,10 @@
 
 {Cc, Ci, Cu} = require 'chrome'
-log = require('ko/logging').getLogger 'preference-spy'
 
-loggingPrefs = false
+log = require('ko/logging').getLogger 'preference-spy'
+PrefLogger = require 'preferencespy/pref/pref-logger'
+
+prefLogger = new PrefLogger
 
 currentViewIsEditor = ->
 	view = ko?.views?.manager?.currentView
@@ -65,7 +67,15 @@ disableAllNodes = (cmdset) ->
 			'Komodo:ProjectPrefs',
 			'chrome,dependent,resizable,close=yes,modal=yes',
 			args);
-	@toggleLogPreferenceChanges = ->
-		loggingPrefs = not loggingPrefs
+
+	@toggleLogGlobalPreferenceChanges = ->
+		prefLogger.toggleGlobal()
+
+	@toggleLogProjectPreferenceChanges = ->
+		prefLogger.toggleProjects()
+
+	@toggleLogFilePreferenceChanges = ->
+		prefLogger.toggleFiles()
+
 
 ).call module.exports
