@@ -4,3 +4,4 @@
 .komodotools/
 /chrome.manifest
 /build/
+/test/
