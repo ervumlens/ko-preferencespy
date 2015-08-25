@@ -77,8 +77,8 @@ disableAllNodes = (cmdset) ->
 		if prefLogger.loggingProjects and not noAlert
 			props =
 				title: 'Logging Project Preference Changes'
-				
-			koAlert 'Only changes to currently existing projects will be logged. Caution: not all project preferences are successfully logged.', props
+
+			koAlert 'Only changes to currently existing projects will be logged. \n\nCaution: Only saved preferences are logged. Transient changes and certain project preferences are not available.', props
 
 	@toggleLogFilePreferenceChanges = (noAlert) ->
 		prefLogger.toggleFiles()
@@ -86,6 +86,6 @@ disableAllNodes = (cmdset) ->
 			props =
 				title: 'Logging File Preference Changes'
 
-			koAlert 'Note: Only changes to currently existing files will be logged.', props
+			koAlert 'Only changes to currently existing files will be logged. \n\nCaution: Only saved preferences are logged. Transient changes are not available.', props
 
 ).call module.exports
