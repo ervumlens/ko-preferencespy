@@ -42,7 +42,12 @@
 				<rows>
 					<row align="center">
 						<label value="Name:" control="preferencespy-search-forname-text"/>
-						<textbox id="preferencespy-search-forname-text" flex="1" placeholder="(any)"/>
+						<textbox id="preferencespy-search-forname-text"
+								 flex="1"
+								 placeholder="(any)"
+								 type="search"
+								 searchbutton="true"
+								 oncommand="PreferenceSpy_DoSearch()"/>
 						<menulist id="preferencespy-search-forname-type">
 						  <menupopup>
 							<menuitem label="plain" value="plain"/>
@@ -52,7 +57,12 @@
 					</row>
 					<row align="center">
 						<label value="Value:" control="preferencespy-search-forvalue-text"/>
-						<textbox id="preferencespy-search-forvalue-text" flex="1" placeholder="(any)"/>
+						<textbox id="preferencespy-search-forvalue-text"
+								 flex="1"
+								 placeholder="(any)"
+								 type="search"
+								 searchbutton="true"
+								 oncommand="PreferenceSpy_DoSearch()"/>
 						<menulist id="preferencespy-search-forvalue-type">
 						  <menupopup>
 							<menuitem label="plain" value="plain"/>
