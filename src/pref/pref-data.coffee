@@ -14,6 +14,8 @@ extractObjectValue = (container) ->
 	catch e
 		#log.warn e
 
+	log.warn "Unknown container type encountered: id = #{container.id}"
+
 	new PreferenceContainer
 
 class PreferenceContainer
@@ -22,7 +24,7 @@ class PreferenceContainer
 	constructor: ->
 	isEmpty: ->
 		@count is 0
-	addChildren: (root) ->
+
 	visitNames: (visitor) ->
 		log.warn "Called 'visitNames' on a mystery container"
 
@@ -50,7 +52,6 @@ class PreferenceContainer
 			target.container = extractObjectValue @container.getPref id
 		else
 			target.value = @getValueForId id, target.type
-			target.getContainer = null
 
 class PreferenceSet extends PreferenceContainer
 	constructor: (@container) ->
@@ -69,13 +70,6 @@ class PreferenceSet extends PreferenceContainer
 	isOverwritten: (id) ->
 		@container.hasPrefHere(id)
 
-	addChildren: (root) ->
-		for id in @allIds
-			overwritten = @container.hasPrefHere(id)
-			type = @container.getPrefType(id)
-			value = @getValueForId id, type
-			addItem root, {id, value, type, overwritten}
-
 class OrderedPreference extends PreferenceContainer
 	constructor: (@container) ->
 		@count = @container.length
@@ -85,16 +79,6 @@ class OrderedPreference extends PreferenceContainer
 		#log.warn "Called 'visitNames' on a OrderedPrefs with #{@count} prefs"
 		for id in [0 ... @count]
 			visitor id, (args...) => @fetchValues args...
-
-	addChildren: (root) ->
-		id = 0
-		loop
-			break unless id < @count
-			overwritten = false
-			type = @container.getPrefType(id)
-			value = @getValueForId id, type
-			addItem root, {id, value, type, overwritten}
-			++id
 
 module.exports = class PrefData
 	meta: []
