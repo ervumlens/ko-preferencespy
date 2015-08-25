@@ -22,7 +22,14 @@ class PrefScope
 			value = '(object)'
 
 		log.warn "Preference changed (#{@scope}): #{topic} is now \"#{value}\""
+		log.warn 'Stack trace: \n' + @createTrace()
 		#log.warn "Subject is nsISupports: #{subject.QueryInterface?}"
+
+	createTrace: ->
+		stack = new Error().stack
+		parts = stack.split '\n'
+		parts = parts.map (part) -> '\t' + part
+		parts.join '\n'
 
 class PrefLogger
 	loggingGlobal: false
