@@ -20,6 +20,15 @@ To monitor preference changes, open the "Preference Spy" menu under "Tools",
 and choose a "Log (whatever) Pref Changes" option. Now preference changes will be logged to Komodo's
 standard error log.
 
+###Limitations
+
+Certain preferences will not be logged when using preference logging:
+
+* Temporary or transient preference changes are not logged.
+These are changes that look fine in the preference dialog, but do not appear to be applied as expected. 
+
+* Certain project preferences are not logged. This is being investigated.
+
 ###Build
 
 Building Preference Spy requires the [CoffeeScript](http://coffeescript.org) compiler available on the environment `PATH` and an installation of Komodo Edit or IDE.
