@@ -43,7 +43,7 @@ stateSorter = new Sorter COLID_STATE, (a, b) ->
 #A TreeView implements nsITreeView
 class TreeView
 	sorted: false
-	sorter: new Sorter null, -> false
+	sorter: nameSorter
 
 	constructor: (prefData) ->
 		#Root is a virtual row under which all top-level rows belong.
@@ -163,7 +163,7 @@ class TreeView
 		else
 			@sorter = sorter.clone()
 
-		@treebox.beginUpdateBatch()
+		@beginUpdateBatch()
 		try
 			@root.sort @sorter, col
 			@sorted = true
@@ -172,19 +172,27 @@ class TreeView
 			log.exception e
 		finally
 			@updateColumnSortUI @sorter, col
-			@treebox.endUpdateBatch()
+			@endUpdateBatch()
+
+	beginUpdateBatch: ->
+		return unless @treebox
+		@treebox.beginUpdateBatch()
+
+	endUpdateBatch: ->
+		return unless @treebox
+		@treebox.endUpdateBatch()
 
 	filterAndSort: (rules, sorter) ->
 		count = 0
-		@treebox.beginUpdateBatch()
+		@beginUpdateBatch()
 		try
 			count = @root.filterAndSort rules, sorter
 		finally
-			@treebox.endUpdateBatch()
+			@endUpdateBatch()
 		count
 
 	updateColumnSortUI: (sorter, col) ->
-		return unless col
+		return unless col and @tree
 		columns = col.columns
 		direction = sorter.direction
 		@tree.setAttribute 'sortResource', col.id

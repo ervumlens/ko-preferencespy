@@ -108,6 +108,7 @@
 					<treecol id="preferencespy-namecol"
 							 label="Name"
 							 primary="true"
+							 sortDirection="ascending"
 							 flex="1"/>
 					<splitter class="tree-splitter"/>
 					<treecol id="preferencespy-valuecol"

@@ -4,7 +4,7 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>preferencespy@ervumlens.github.io</em:id>
         <em:name>Preference Spy</em:name>
-        <em:version>1.0.0</em:version>
+        <em:version>1.0.1-unstable</em:version>
         <em:description>View and monitor preferences. Tools->Preference Spy</em:description>
         <em:creator>ervumlens</em:creator>
         <em:homepageURL>https://ervumlens.github.io/ko-preferencespy</em:homepageURL>
