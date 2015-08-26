@@ -88,8 +88,8 @@ class FilterRules
 
 	accepts: (row) ->
 		#Do all rules accept this row?
-		for i in [0 ... @rules.length]
-			return false unless @rules[i].accepts row
+		for rule in @rules
+			return false unless rule.accepts row
 		true
 
 module.exports = FilterRules
