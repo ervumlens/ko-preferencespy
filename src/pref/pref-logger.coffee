@@ -16,8 +16,11 @@ class PrefScope
 		if @observerService
 			@observerService.removeObserver @, ''
 
-	observe: (subject, topic, data) ->
-		value = @container.getValueForId topic
+	observe: (prefset, topic, data) ->
+
+		localContainer = PrefData.getContainer prefset
+
+		value = localContainer.getValueForId topic
 
 		if value?.QueryInterface?
 			#The value is an object, just call it such
