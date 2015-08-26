@@ -5,7 +5,7 @@ log = require('ko/logging').getLogger 'preference-spy'
 extractObjectValue = (container) ->
 	try
 		ordered = container.QueryInterface Ci.koIOrderedPreference
-		return new OrderedPreference container
+		return new OrderedPreference ordered
 	catch e
 		#log.warn e
 	try
@@ -40,6 +40,10 @@ class PreferenceContainer
 	visitNames: (visitor) ->
 		log.warn "Called 'visitNames' on a mystery container"
 
+	# Returns the value for the preference named by the id.
+	# `null` is returned if the id is invalid/removed/etc. XXX verify
+	# The type for the preference is optional. Pass it if it's
+	# known to save looking it up again.
 	getValueForId: (id, type) ->
 		if not type
 			type = @container.getPrefType id
@@ -50,7 +54,8 @@ class PreferenceContainer
 			when 'long' then @container.getLongPref id
 			when 'double' then @container.getDoublePref id
 			when 'object' then extractObjectValue @container.getPref id
-			else '(unknown)'
+			when null then null
+			else "(unknown type #{type})"
 
 	#This is not universally implemented
 	isOverwritten: (id) ->
@@ -66,7 +71,8 @@ class PreferenceContainer
 			target.value = '(container)'
 			target.container = extractObjectValue @container.getPref id
 		else
-			target.value = @getValueForId id, target.type
+			value = @getValueForId id, target.type
+			target.value = value or '(null)'
 
 class PreferenceSet extends PreferenceContainer
 	constructor: (@container) ->
