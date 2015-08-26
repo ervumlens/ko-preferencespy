@@ -26,7 +26,7 @@ class PrefScope
 			#The value is an object, just call it such
 			value = '(object)'
 
-		msg = if value then "now \"#{value}\"" else 'removed'
+		msg = if value isnt null then "now \"#{value}\"" else 'removed'
 		log.warn "Preference changed (#{@scope}): \"#{topic}\" is #{msg}"
 		log.warn 'Stack trace: \n' + @createTrace()
 

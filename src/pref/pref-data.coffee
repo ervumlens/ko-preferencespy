@@ -72,7 +72,9 @@ class PreferenceContainer
 			target.container = extractObjectValue @container.getPref id
 		else
 			value = @getValueForId id, target.type
-			target.value = value or '(null)'
+			value = '(null)' if value is null
+
+			target.value = value
 
 class PreferenceSet extends PreferenceContainer
 	constructor: (@container) ->
