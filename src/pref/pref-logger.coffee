@@ -6,30 +6,74 @@ log = require('ko/logging').getLogger 'preference-spy'
 PrefData = require 'preferencespy/pref/pref-data'
 
 class PrefScope
-	constructor: (@scope, prefset) ->
-		@observerService = prefset.prefObserverService
-		@observerService.addObserver @, '', true
-		@container = PrefData.getContainer prefset
+	constructor: (@scope, @prefset) ->
+		@container = PrefData.getContainer @prefset
+		@observerService = @prefset.prefObserverService
+		if @observerService
+			@observerService.addObserver @, '', true
 
 	dispose: ->
-		@observerService.removeObserver @, ''
+		if @observerService
+			@observerService.removeObserver @, ''
 
 	observe: (subject, topic, data) ->
 		value = @container.getValueForId topic
 
-		if value.QueryInterface?
-			#The values is an object, just call it such
+		if value?.QueryInterface?
+			#The value is an object, just call it such
 			value = '(object)'
 
-		log.warn "Preference changed (#{@scope}): #{topic} is now \"#{value}\""
+		msg = if value then "now \"#{value}\"" else 'removed'
+		log.warn "Preference changed (#{@scope}): \"#{topic}\" is #{msg}"
 		log.warn 'Stack trace: \n' + @createTrace()
-		#log.warn "Subject is nsISupports: #{subject.QueryInterface?}"
 
 	createTrace: ->
 		stack = new Error().stack
 		parts = stack.split '\n'
 		parts = parts.map (part) -> '\t' + part
 		parts.join '\n'
+
+class PrefScopeGroup extends PrefScope
+	constructor: ->
+		super
+		@idToChild = {}
+
+	loadChildren: ->
+		@idToChild = {}
+		@container.visitNames (id) =>
+			return unless @prefset.hasPref id
+			@addChild id
+
+	addChild: (id) ->
+		prefs = @prefset.getPref id
+		child = new PrefScope id, prefs
+		@idToChild[id] = child
+		#log.warn "Adding scope #{rootName} -> #{id}"
+
+	removeChild: (id) ->
+		child = @idToChild[id]
+		child.dispose()
+		delete @idToChild[id]
+
+	disposeChildren: ->
+		for id, child of @idToChild
+			child.dispose()
+
+		@idToChild = {}
+
+	observe: (subject, id, data) ->
+		super
+		hasPref = @prefset.hasPref(id)
+		hasChild = @idToChild[id]
+
+		if hasPref and not hasChild
+			@addChild id
+		else if not hasPref and hasChild
+			@removeChild id
+
+	dispose: ->
+		super
+		@disposeChildren()
 
 class PrefLogger
 	loggingGlobal: false
@@ -39,8 +83,6 @@ class PrefLogger
 	constructor: ->
 		@prefService = Cc["@activestate.com/koPrefService;1"].
                 getService(Ci.koIPrefService);
-		@projectScopes = []
-		@fileScopes = []
 
 	toggleGlobal: ->
 		if @loggingGlobal
@@ -52,44 +94,34 @@ class PrefLogger
 
 	toggleProjects: ->
 		if @loggingProjects
-			@projectScopes.forEach (scope) -> scope.dispose()
-			@projectScopes = []
+			@projectScopes.dispose() if @projectScopes
+			@projectScopes = null
 		else
-			@createScopesFromChildPrefs 'viewStateMRU', @projectScopes
-		@loggingProjects = not @loggingProjects
+			@projectScopes = @createGroupFromRootPref 'viewStateMRU'
+			@projectScopes.loadChildren()
 
-	reloadProjects: ->
-		return unless @loggingProjects
-		@createScopesFromChildPrefs 'viewStateMRU', @projectScopes
+		@loggingProjects = not @loggingProjects
 
 	toggleFiles: ->
 		if @loggingFiles
-			@fileScopes.forEach (scope) -> scope.dispose()
-			@fileScopes = []
+			@fileScopes.dispose() if @fileScopes
+			@fileScopes = null
 		else
-			@createScopesFromChildPrefs 'docStateMRU', @fileScopes
-		@loggingFiles = not @loggingFiles
+			@fileScopes = @createGroupFromRootPref 'docStateMRU'
+			@fileScopes.loadChildren()
 
-	reloadFiles: ->
-		return unless @loggingFiles
-		@createScopesFromChildPrefs 'docStateMRU', @fileScopes
+		@loggingFiles = not @loggingFiles
 
 	createScopeFromRootPref: (name) ->
 		new PrefScope name, @prefService.getPrefs(name)
 
-	createScopesFromChildPrefs: (rootName, target) ->
-		rootPrefs = @prefService.getPrefs rootName
-		rootContainer = PrefData.getContainer rootPrefs
-		rootContainer.visitNames (id) =>
-			if rootPrefs.hasPref id
-				prefs = rootPrefs.getPref id
-				target.push new PrefScope id, prefs
-				#log.warn "Adding scope #{rootName} -> #{id}"
+	createGroupFromRootPref: (name) ->
+		new PrefScopeGroup name, @prefService.getPrefs(name)
 
 	dispose: ->
 		@globalScope.dispose() if @globalScope
-		@projectScopes.forEach (scope) -> scope.dispose()
-		@fileScopes.forEach (scope) -> scope.dispose()
+		@projectScopes.dispose() if @projectScopes
+		@fileScopes.dispose() if @fileScopes
 
 
 module.exports = PrefLogger
