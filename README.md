@@ -22,12 +22,12 @@ standard error log.
 
 ###Limitations
 
-Certain preferences will not be logged when using preference logging:
-
 * Temporary or transient preference changes are not logged.
-These are changes that look fine in the preference dialog, but do not appear to be applied as expected. 
+These are changes that look fine in the preference dialog but do not appear to be applied as expected.
 
 * Certain project preferences are not logged. This is being investigated.
+
+* The search panel in the Preferences dialog does not search for nested preference values.
 
 ###Build
 
