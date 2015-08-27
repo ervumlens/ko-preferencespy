@@ -1,0 +1,184 @@
+<?xml version="1.0"?>
+<!--
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0.
+If a copy of the MPL was not distributed with this file, You can obtain one at
+http://mozilla.org/MPL/2.0/.
+-->
+<?xml-stylesheet href="chrome://komodo/skin/" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/global/global.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/buttons.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/views.css" type="text/css"?>
+<?xml-stylesheet href="chrome://komodo/skin/bindings/widgets.css" type="text/css"?>
+<?xml-stylesheet href="chrome://preferencespy/skin/bindings/main-dialog.css" type="text/css"?>
+<?xul-overlay href="chrome://komodo/content/bindings/scintilla-overlay.xul"?>
+
+<dialog
+  xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul"
+  xmlns:html="http://www.w3.org/1999/xhtml"
+  id="PreferenceSpy:preference-dialog"
+  title="Preference Spy"
+  buttons="cancel"
+  buttonlabelcancel="Close"
+  width="600"
+  height="400"
+  screenX="20"
+  screenY="20"
+  persist="screenX screenY width height"
+  onload="PreferenceSpyOnLoad();"
+  onblur="PreferenceSpyOnBlur();"
+  onfocus="PreferenceSpyOnFocus();"
+  onunload="PreferenceSpyOnUnload();"
+  onresize="PreferenceSpyOnResize();"
+>
+    <script src="chrome://xtk/content/xtk.js" type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/logging.js" type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/uriparse.js" type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/open.js" type="application/x-javascript;version=1.7"/>
+
+    <script src="chrome://komodo/content/library/windowManager.js" type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/timers.js"       type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/stringutils.js"  type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/commands.js"     type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/library/dragdrop.js"     type="application/x-javascript;version=1.7"/>
+    <script src="chrome://komodo/content/markers.js"              type="application/x-javascript;version=1.7"/>
+
+    <script src="chrome://komodo/content/library/otherdialogs.js" type="application/x-javascript;version=1.7"/>
+    <script src="chrome://preferencespy/content/lib/ui/dialog.js" type="application/x-javascript;version=1.7"/>
+
+    <vbox id="root" flex="1" class="autoscroll">
+		<tabbox flex="1">
+			<tabpanels flex="1">
+				<tabpanel>
+					<!-- pref view tab -->
+					<hbox flex="1">
+						<vbox>
+							<!-- search box -->
+							<textbox type="search" id="sources-search"/>
+							<!-- preference sources -->
+							<tree id="sources" flex="1" hidecolumnpicker="true">
+								<treecols>
+									<treecol id="sources-namecol" label="name" primary="true" flex="1"/>
+									<treecol id="sources-tagcol" label="tag"/>
+								</treecols>
+								<treechildren>
+								</treechildren>
+							</tree>
+						</vbox>
+						<splitter orient="horizontal"/>
+						<vbox flex="1">
+							<groupbox>
+								<caption label="Properties"/>
+								<hbox align="center">
+								<!-- id -->
+									<label value="id:"/><textbox flex="1" readonly="true" value="foobar"/>
+								</hbox>
+								<!-- ?? -->
+							</groupbox>
+							<!-- view details -->
+							<groupbox>
+								<caption label="Search Preferences"/>
+								<grid>
+									<columns>
+										<column/>
+										<column flex="1"/>
+									</columns>
+									<rows>
+										<row align="center">
+											<label value="Name:" control="search-forname-text"/>
+											<textbox id="search-forname-text"
+													 flex="1"
+													 placeholder="(any)"
+													 type="search"
+													 timeout="1"
+													 oncommand="PreferenceSpy_DoSearch()"/>
+											<menulist id="search-forname-type"
+													  oncommand="PreferenceSpy_DoSearch()">
+											  <menupopup>
+												<menuitem label="plain" value="plain"/>
+												<menuitem label="regex" value="regex"/>
+											  </menupopup>
+											</menulist>
+										</row>
+										<row align="center">
+											<label value="Value:" control="search-forvalue-text"/>
+											<textbox id="search-forvalue-text"
+													 flex="1"
+													 placeholder="(any)"
+													 type="search"
+													 timeout="1"
+													 oncommand="PreferenceSpy_DoSearch()"/>
+											<menulist id="search-forvalue-type"
+													  oncommand="PreferenceSpy_DoSearch()">
+											  <menupopup>
+												<menuitem label="plain" value="plain"/>
+												<menuitem label="regex" value="regex"/>
+											  </menupopup>
+											</menulist>
+										</row>
+										<row align="center">
+											<label value="Type:" control="search-fortype-text"/>
+											<hbox align="center">
+												<menulist id="search-fortype"
+														  oncommand="PreferenceSpy_DoSearch()">
+												  <menupopup>
+													<menuitem label="(any)" value="any"/>
+													<menuitem label="boolean" value="boolean"/>
+													<menuitem label="double" value="double"/>
+													<menuitem label="long" value="long"/>
+													<menuitem label="object" value="object"/>
+													<menuitem label="string" value="string"/>
+												  </menupopup>
+												</menulist>
+												<label value="State:" control="search-forstate-text"/>
+												<menulist id="search-forstate"
+														  oncommand="PreferenceSpy_DoSearch()">
+												  <menupopup>
+													<menuitem label="(any)" value="any"/>
+													<menuitem label="inherited" value="inherited"/>
+													<menuitem label="overwritten" value="overwritten"/>
+												  </menupopup>
+												</menulist>
+												<description id="search-message" flex="1"/>
+											</hbox>
+										</row>
+									</rows>
+								</grid>
+							</groupbox>
+								<tree id="result"
+									  flex="1"
+									  hidecolumnpicker="true">
+									<treecols>
+										<treecol id="result-namecol"
+												 label="Name"
+												 primary="true"
+												 sortDirection="ascending"
+												 flex="1"/>
+										<splitter class="tree-splitter"/>
+										<treecol id="result-valuecol"
+												 label="Value"
+												 flex="1"/>
+										<splitter class="tree-splitter"/>
+										<treecol id="result-typecol"
+												 label="Type" />
+										<splitter class="tree-splitter"/>
+										<treecol id="result-overwrittencol"
+												 label="Overwritten" />
+									</treecols>
+									<treechildren id="result-children">
+									</treechildren>
+								</tree>
+						</vbox>
+					</hbox>
+				</tabpanel>
+
+				<tabpanel>
+					<!-- monitor tab -->
+				</tabpanel>
+			</tabpanels>
+			<tabs onselect="PreferenceSpyOnTabSelected(this, event);">
+				<tab id="tab_view" label="View"/>
+				<tab id="tab_monitor" label="Monitor"/>
+			</tabs>
+		</tabbox>
+	</vbox>
+</dialog>

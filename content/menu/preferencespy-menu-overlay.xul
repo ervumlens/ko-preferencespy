@@ -16,76 +16,15 @@
   </script>
 
   <commandset id="allcommands">
-	
-	<commandset id="cmdset_preferencespy_project_only"
-			oncommandupdate="preferencespy.updateProjectOnlyCommands(this)"
-			commandupdater="true"
-			events="some_projects_open">
-
-	  <command id="Preferencespy:OpenProjectPreferences"
-			   oncommand="preferencespy.openProjectPreferences(window)"
-			   disabled="true"/>
-	</commandset>
-
-	<commandset id="cmdset_preferencespy_editor_only"
-			oncommandupdate="preferencespy.updateEditorViewOnlyCommands(this)"
-			commandupdater="true"
-			events="current_view_changed,currentview_is_editor,some_files_open">
-
-	  <command id="Preferencespy:OpenViewPreferences"
-			   oncommand="preferencespy.openViewPreferences(window)"
-			   disabled="true"/>
-	</commandset>
-
-	<command id="Preferencespy:OpenGlobalPreferences"
-			 oncommand="preferencespy.openGlobalPreferences(window)"/>
-
-	<command id="Preferencespy:ToggleLogGlobalPreferenceChanges"
-			 oncommand="preferencespy.toggleLogGlobalPreferenceChanges()"/>
-
-	<command id="Preferencespy:ToggleLogProjectPreferenceChanges"
-			 oncommand="preferencespy.toggleLogProjectPreferenceChanges()"/>
-
-	<command id="Preferencespy:ToggleLogFilePreferenceChanges"
-			 oncommand="preferencespy.toggleLogFilePreferenceChanges()"/>
+	<command id="PreferenceSpy:OpenNewDialog"
+			 oncommand="preferencespy.openNewDialog(window)"/>
   </commandset>
 
   <menupopup id="popup_tools">
-	<menu id= "preferencespy_menu_root" label="Preference Spy">
-		<menupopup id ="preferencespy_menu_root_popup">
-			<menuitem id="preferencespy_menu_enable_global_logging"
-					  label="Log Global Pref Changes"
-					  observes="Preferencespy:ToggleLogGlobalPreferenceChanges"
-					  type="checkbox"
-					  checked="false"
-					  class="menu-iconic-wide"/>
-			<menuitem id="preferencespy_menu_enable_project_logging"
-					  label="Log Project Pref Changes"
-					  observes="Preferencespy:ToggleLogProjectPreferenceChanges"
-					  type="checkbox"
-					  checked="false"
-					  class="menu-iconic-wide"/>
-			<menuitem id="preferencespy_menu_enable_file_logging"
-					  label="Log File Pref Changes"
-					  observes="Preferencespy:ToggleLogFilePreferenceChanges"
-					  type="checkbox"
-					  checked="false"
-					  class="menu-iconic-wide"/>
-			<menuseparator/>
-			<menuitem id="preferencespy_menu_open_global_prefs"
-					  label="Open Global Preferences"
-					  observes="Preferencespy:OpenGlobalPreferences"
-					  class="menu-iconic-wide"/>
-			<menuitem id="preferencespy_menu_open_project_prefs"
-					  label="Open Project Preferences"
-					  observes="Preferencespy:OpenProjectPreferences"
-					  class="menu-iconic-wide"/>
-			<menuitem id="preferencespy_menu_open_view_prefs"
-					  label="Open File/View Preferences"
-					  observes="Preferencespy:OpenViewPreferences"
-					  class="menu-iconic-wide"/>
-		</menupopup>
-	</menu>
+	<menuitem id="preferencespy_open_new_dialog"
+			  label="Preference Spy"
+			  observes="PreferenceSpy:OpenNewDialog"
+			  class="menu-iconic-wide"/>
   </menupopup>
 
 </overlay>

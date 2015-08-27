@@ -1,0 +1,22 @@
+/*mostly lifted from Komodo's pref-window.less */
+#sources treecols
+{
+	height: 0px;
+	overflow: hidden;
+}
+
+#sources treechildren::-moz-tree-row
+{
+	height: 26px;
+}
+
+#sources treechildren::-moz-tree-cell-text
+{
+	font-weight: normal;
+}
+
+#sources treechildren::-moz-tree-cell-text(root)
+{
+	font-weight: bold;
+	padding-left: 4px;
+}

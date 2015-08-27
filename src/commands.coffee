@@ -88,4 +88,9 @@ disableAllNodes = (cmdset) ->
 
 			koAlert 'Only changes to currently existing files will be logged. \n\nCaution: Only saved preferences are logged. Transient changes are not available.', props
 
+	@openNewDialog = (window) ->
+		winOpts = 'centerscreen,chrome,resizable,scrollbars,dialog=no,close';
+		window.openDialog 'chrome://preferencespy/content/main-dialog.xul', '_blank', winOpts
+
+
 ).call module.exports
