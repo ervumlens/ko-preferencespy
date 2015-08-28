@@ -30,7 +30,8 @@ monitorView = null
 @PreferenceSpyOnUnload = ->
 	log.warn "PreferenceSpyOnUnload"
 	sourceView.dispose() if sourceView
-
+	resultView.dispose() if resultView
+	
 @PreferenceSpyOnResize = ->
 	#log.warn "PreferenceSpyOnResize"
 

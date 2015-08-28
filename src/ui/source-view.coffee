@@ -1,109 +1,73 @@
-#CommonView = require 'preferencespy/ui/common-view'
+{Cc, Ci, Cu} = require 'chrome'
 
 PrefData = require 'preferencespy/ui/pref-data'
 
 log = require('ko/logging').getLogger 'preference-spy'
 
-{Cc, Ci, Cu} = require 'chrome'
 
 observerService = Cc["@mozilla.org/observer-service;1"].getService Ci.nsIObserverService
 prefService = Cc["@activestate.com/koPrefService;1"].getService Ci.koIPrefService
+partService = Cc["@activestate.com/koPartService;1"].getService Ci.koIPartService
+
 #prefObserverService = prefService.prefs.prefObserverService;
 
-class SourceRow
-	constructor: (@parent, @name, @prefRootKey, @prefKey = null) ->
-	load: ->
-		#lazy load the pref container
-		rootPrefs = prefService.getPrefs @prefRootKey
-		if @prefKey
-			@container = PrefData.getContainer rootPrefs.getPref @prefKey
-		else
-			@container = PrefData.getContainer rootPrefs
-		@load = ->
-	getPrefContainer: ->
-		@load()
-		@container
+SourceRow = require 'preferencespy/ui/source-row'
+SourceRoot = require 'preferencespy/ui/source-root'
 
-class SourceRoot
-	opened: false
-	index: 0
-	constructor: (@name) ->
-		@children = []
-		@.__defineGetter__ 'childCount', =>
-			@children.length
-
-	childIndex: (index) ->
-		index - @index - 1
-
-	containsIndex: (index) ->
-		return true if index is @index
-		index > @index and @isOpen() and @childIndex(index) < @childCount
-
-	getChild: (index) ->
-		#log.warn "SourceRoot::getChild #{index}"
-		child = @children[@childIndex(index)]
-		if not child
-			throw new Error "No child at index #{index} in root #{@name}(@index=#{@index})"
-		child
-
-	getPrefContainer: (index) ->
-		#roots have no prefs themselves
-		return null if index is @index
-		@getChild(index).getPrefContainer()
-
-	getName: (index) ->
-		#log.warn "SourceRoot::getName #{index}"
-		if index is @index
-			@name
-		else
-			@getChild(index).name
-
-	getTag: (index) ->
-		#log.warn "SourceRoot::getTag #{index}"
-		if index is @index
-			''
-		else
-			@getChild(index).tag
-
-	isEmpty: ->
-		#log.warn "SourceRoot::isEmpty"
-		@children.length is 0
-
-	isOpen: ->
-		#log.warn "SourceRoot::isOpen"
-		@opened
-
-	lastIndex: ->
-		if @isOpen()
-			@index + @children.length
-		else
-			@index
-
-	toggleOpen: ->
-		#log.warn "SourceRoot::toggleOpen"
-		@opened = not @opened
-
-	parentIndex: ->
-		log.warn "SourceRoot::parentIndex"
-		-1
-
-	dispose: ->
 
 class SourceActiveRoot extends SourceRoot
-	constructor: ->
-		super 'Active'
+	opened: true
+
+	constructor: (view) ->
+		super view, 'Active'
 		@children.push new SourceRow @, 'global', 'global'
 		#TODO add global and anything open
-		@resetCurrentProjects()
-		@resetCurrentFiles()
-		@resetCurrentEditors()
+		@resetCurrentProjects true
+		@resetCurrentFiles true
+		@resetCurrentEditors true
 		observerService.addObserver @, 'current_project_changed', false
 
-	resetCurrentProjects: ->
+	resetCurrentProjects: (startup) ->
+		#https://github.com/Komodo/KomodoEdit/blob/master/src/projects/koIProject.p.idl
 
-	resetCurrentFiles: ->
+		@update =>
+			@setCurrentProject partService.currentProject, startup
 
-	resetCurrentEditors: ->
+	setCurrentProject: (project, startup) ->
+		addChild = true
+
+		if not project
+			# No project, so everyone gets a '-'.
+			addChild = false
+			for child in @children
+				break if child.prefRootKey is 'docStateMRU'
+				continue unless child.prefRootKey is 'viewStateMRU'
+				child.tag = '-'
+
+		else if not startup
+			# We have a project loading after we've already initialized.
+			# If we've seen the project before, reset its tag. Otherwise,
+			# the new project gets a '+' and everyone else gets a '-'.
+			for child in @children
+				break if child.prefRootKey is 'docStateMRU'
+				continue unless child.prefRootKey is 'viewStateMRU'
+				if child.prefKey is project.url
+					child.tag = ''
+					addChild = false
+				else
+					child.tag = '-'
+
+		# Else we're starting up and we need a new child here.
+
+		if addChild
+			child = new SourceRow @, project.name, 'viewStateMRU', project.url
+			child.tag = '+' unless startup
+			@children.splice 1, 0, child
+
+
+	resetCurrentFiles: (startup = false) ->
+
+	resetCurrentEditors: (startup = false) ->
 
 	observe: (subject, topic, data) ->
 		log.warn "SourceActiveRoot::observe #{topic}"
@@ -126,9 +90,9 @@ class SourceView
 		@.__defineGetter__ 'rowCount', =>
 			@getRowCount()
 
-		@activeSourcesRow = new SourceActiveRoot
-		@allProjectsRow = new SourceRoot('All Projects')
-		@allFilesRow = new SourceRoot('All Files')
+		@activeSourcesRow = new SourceActiveRoot @
+		@allProjectsRow = new SourceRoot @, 'All Projects'
+		@allFilesRow = new SourceRoot @, 'All Files'
 		@roots = [@activeSourcesRow, @allProjectsRow, @allFilesRow]
 		@reindex()
 		@tree = document.getElementById 'sources'
@@ -254,6 +218,7 @@ class SourceView
 			@treebox.beginUpdateBatch()
 			try
 				fn()
+				@reindex()
 			finally
 				@treebox.endUpdateBatch()
 		else

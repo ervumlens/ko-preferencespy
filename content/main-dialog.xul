@@ -63,7 +63,7 @@ http://mozilla.org/MPL/2.0/.
 								  >
 								<treecols>
 									<treecol id="sources-namecol" label="name" primary="true" flex="1"/>
-									<treecol id="sources-tagcol" label="tag"/>
+									<treecol id="sources-tagcol" label="-" width="1em"/>
 								</treecols>
 								<treechildren>
 								</treechildren>

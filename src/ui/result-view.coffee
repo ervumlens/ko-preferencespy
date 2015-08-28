@@ -211,4 +211,7 @@ class TreeView
 		col.element.setAttribute 'sortDirection', direction
 		@tree.setAttribute 'sortDirection', direction
 
+	dispose: ->
+		
+
 module.exports = TreeView
