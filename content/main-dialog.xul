@@ -75,7 +75,7 @@ http://mozilla.org/MPL/2.0/.
 								<caption label="Properties"/>
 								<hbox align="center">
 								<!-- id -->
-									<label value="id:"/><textbox flex="1" readonly="true" value="foobar"/>
+									<label value="id:"/><textbox id="result-pref-id" flex="1" readonly="true" value=""/>
 								</hbox>
 								<!-- ?? -->
 							</groupbox>

@@ -24,6 +24,7 @@ monitorView = null
 	log.warn "PreferenceSpyOnSourceSelected"
 	prefset = sourceView.getPrefContainerFromSelection()
 	if prefset
+		document.getElementById('result-pref-id').value = prefset.id()
 		resultView.load prefset
 
 @PreferenceSpyOnUnload = ->

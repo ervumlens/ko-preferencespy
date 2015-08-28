@@ -37,6 +37,9 @@ class PreferenceContainer
 	isEmpty: ->
 		@count is 0
 
+	id: ->
+		@container.id
+
 	visitNames: (visitor) ->
 		log.warn "Called 'visitNames' on a mystery container"
 
