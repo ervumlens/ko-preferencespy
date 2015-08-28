@@ -1,10 +1,28 @@
 #CommonView = require 'preferencespy/ui/common-view'
 
+PrefData = require 'preferencespy/ui/pref-data'
+
 log = require('ko/logging').getLogger 'preference-spy'
 
-class SourceRow
-	constructor: (@parent, @name, @tag = '') ->
+{Cc, Ci, Cu} = require 'chrome'
 
+observerService = Cc["@mozilla.org/observer-service;1"].getService Ci.nsIObserverService
+prefService = Cc["@activestate.com/koPrefService;1"].getService Ci.koIPrefService
+#prefObserverService = prefService.prefs.prefObserverService;
+
+class SourceRow
+	constructor: (@parent, @name, @prefRootKey, @prefKey = null) ->
+	load: ->
+		#lazy load the pref container
+		rootPrefs = prefService.getPrefs @prefRootKey
+		if @prefKey
+			@container = PrefData.getContainer rootPrefs.getPref @prefKey
+		else
+			@container = PrefData.getContainer rootPrefs
+		@load = ->
+	getPrefContainer: ->
+		@load()
+		@container
 
 class SourceRoot
 	opened: false
@@ -27,6 +45,11 @@ class SourceRoot
 		if not child
 			throw new Error "No child at index #{index} in root #{@name}(@index=#{@index})"
 		child
+
+	getPrefContainer: (index) ->
+		#roots have no prefs themselves
+		return null if index is @index
+		@getChild(index).getPrefContainer()
 
 	getName: (index) ->
 		#log.warn "SourceRoot::getName #{index}"
@@ -64,14 +87,38 @@ class SourceRoot
 		log.warn "SourceRoot::parentIndex"
 		-1
 
+	dispose: ->
+
 class SourceActiveRoot extends SourceRoot
 	constructor: ->
 		super 'Active'
-		@children.push new SourceRow @, 'global'
+		@children.push new SourceRow @, 'global', 'global'
 		#TODO add global and anything open
+		@resetCurrentProjects()
+		@resetCurrentFiles()
+		@resetCurrentEditors()
+		observerService.addObserver @, 'current_project_changed', false
+
+	resetCurrentProjects: ->
+
+	resetCurrentFiles: ->
+
+	resetCurrentEditors: ->
+
+	observe: (subject, topic, data) ->
+		log.warn "SourceActiveRoot::observe #{topic}"
+		switch topic
+			when 'current_project_changed' then @resetCurrentProjects()
+
+
+	dispose: ->
+		try
+			observerService.removeObserver @, 'current_project_changed'
+		catch
 
 class SourceView
 	sorted: false
+	selection: null
 
 	constructor: ->
 		#log.warn "SourceView::constructor"
@@ -195,20 +242,43 @@ class SourceView
 		log.warn "SourceView::toggleOpenState #{index}"
 		return if @isContainerEmpty index
 		root = @rootFor index
-		@beginUpdateBatch()
-		root.toggleOpen()
-		@reindex()
-		@endUpdateBatch()
-		#@treebox.invalidate()
+
+		@update =>
+			root.toggleOpen()
+			@reindex()
 
 	doSearch: ->
 
-	beginUpdateBatch: ->
-		return unless @treebox
-		@treebox.beginUpdateBatch()
+	update: (fn) ->
+		if @treebox
+			@treebox.beginUpdateBatch()
+			try
+				fn()
+			finally
+				@treebox.endUpdateBatch()
+		else
+			fn()
 
-	endUpdateBatch: ->
-		return unless @treebox
-		@treebox.endUpdateBatch()
+	isSelectable: (index, col) ->
+		#log.warn "SourceView::isSelectable #{index}, #{col.id}"
+		true
+
+	getPrefContainerFromSelection: ->
+		return unless @selection.count is 1
+		index = @selection.currentIndex
+		@rootFor(index).getPrefContainer index
+
+
+	performAction: (action) ->
+		#log.warn "SourceView::performAction #{action}"
+
+	performActionOnRow: (action, index) ->
+		#log.warn "SourceView::performActionOnRow #{action}, #{index}"
+
+	performActionOnCell: (action, index, col) ->
+		#log.warn "SourceView::performActionOnCell #{action}, #{index}, #{col.id}"
+
+	dispose: ->
+		@roots.forEach (root) -> root.dispose()
 
 module.exports = SourceView

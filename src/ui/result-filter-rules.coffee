@@ -63,8 +63,8 @@ class FilterRules
 		@rules.push @createStateRule()
 
 	createNameRule: ->
-		text = document.getElementById('preferencespy-search-forname-text').value
-		type = document.getElementById('preferencespy-search-forname-type').value
+		text = document.getElementById('search-forname-text').value
+		type = document.getElementById('search-forname-type').value
 
 		if type is 'regex'
 			new NameRegexRule text
@@ -72,8 +72,8 @@ class FilterRules
 			new NamePlainRule text
 
 	createValueRule: ->
-		text = document.getElementById('preferencespy-search-forvalue-text').value
-		type = document.getElementById('preferencespy-search-forvalue-type').value
+		text = document.getElementById('search-forvalue-text').value
+		type = document.getElementById('search-forvalue-type').value
 
 		if type is 'regex'
 			new ValueRegexRule text
@@ -81,10 +81,10 @@ class FilterRules
 			new ValuePlainRule text
 
 	createTypeRule: ->
-		new TypeRule document.getElementById('preferencespy-search-fortype').value
+		new TypeRule document.getElementById('search-fortype').value
 
 	createStateRule: ->
-		new StateRule document.getElementById('preferencespy-search-forstate').value
+		new StateRule document.getElementById('search-forstate').value
 
 	accepts: (row) ->
 		#Do all rules accept this row?

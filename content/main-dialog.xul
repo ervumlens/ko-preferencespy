@@ -55,7 +55,12 @@ http://mozilla.org/MPL/2.0/.
 							<!-- search box -->
 							<textbox type="search" id="sources-search"/>
 							<!-- preference sources -->
-							<tree id="sources" flex="1" hidecolumnpicker="true">
+							<tree id="sources"
+								  flex="1"
+								  hidecolumnpicker="true"
+								  seltype="single"
+								  onselect="PreferenceSpyOnSourceSelected(this, event)"
+								  >
 								<treecols>
 									<treecol id="sources-namecol" label="name" primary="true" flex="1"/>
 									<treecol id="sources-tagcol" label="tag"/>

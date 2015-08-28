@@ -1,14 +1,68 @@
-class CommonView
-	sorted: false
+#https://developer.mozilla.org/en-US/docs/Mozilla/Tech/XPCOM/Reference/Interface/nsITreeView)
 
-	constructor: (prefData) ->
+log = require('ko/logging').getLogger 'preference-spy'
+
+TreeRow 	= require 'preferencespy/ui/result-row'
+TreeRoot	= require 'preferencespy/ui/result-root'
+Sorter		= require 'preferencespy/ui/sorter'
+FilterRules	= require 'preferencespy/ui/result-filter-rules'
+
+
+COLID_NAME  = 'result-namecol'
+COLID_VALUE = 'result-valuecol'
+COLID_TYPE  = 'result-typecol'
+COLID_STATE = 'result-overwrittencol'
+
+nameSorter  = new Sorter COLID_NAME, (a, b) ->
+	a.getName() > b.getName()
+
+valueSorter = new Sorter COLID_VALUE, (a, b) ->
+	astr = a.getValueString()
+	bstr = b.getValueString()
+	if astr is bstr
+		a.getName() > b.getName()
+	else
+		astr > bstr
+
+typeSorter  = new Sorter COLID_TYPE, (a, b) ->
+	atype = a.getType()
+	btype = b.getType()
+	if atype is btype
+		a.getName() > b.getName()
+	else
+		atype > btype
+
+stateSorter = new Sorter COLID_STATE, (a, b) ->
+	astate = a.getOverwritten()
+	bstate = b.getOverwritten()
+	if astate is bstate
+		a.getName() > b.getName()
+	else
+		astate > bstate
+
+#A TreeView implements nsITreeView
+class TreeView
+	sorted: false
+	sorter: nameSorter
+
+	constructor: ->
 		#Root is a virtual row under which all top-level rows belong.
 		@root = new TreeRoot
-		prefData.visitNames (name, loader) =>
-			new TreeRow name, @root, loader
 
 		@.__defineGetter__ 'rowCount', ->
 			@root.visibleRowCount()
+
+		@tree = document.getElementById 'result'
+		@tree.view = @
+
+	load: (prefData) ->
+
+		@update =>
+			@root.clearChildren()
+
+			prefData.visitNames (name, loader) =>
+				new TreeRow name, @root, loader
+
 
 	rowAt: (index) ->
 		@root.rowAt index
@@ -24,7 +78,6 @@ class CommonView
 	setTree: (treebox) ->
 		@treebox = treebox
 		@root.treebox = treebox
-		@tree = document.getElementById 'preferencespy-tree'
 
 	isEditable: (index, col) ->
 		col.editable
@@ -95,6 +148,8 @@ class CommonView
 		@treebox.invalidateRow index
 
 	doSearch: ->
+		log.warn "ResultView::doSearch"
+
 		rules = new FilterRules
 		result = null
 
@@ -103,6 +158,8 @@ class CommonView
 			result = @filterAndSort rules, @sorter
 		catch e
 			result = "Error: #{e.message}"
+
+		log.warn "ResultView::doSearch -> #{result}"
 
 		if typeof result is 'number'
 			switch result
@@ -119,33 +176,26 @@ class CommonView
 		else
 			@sorter = sorter.clone()
 
-		@beginUpdateBatch()
-		try
+		@update =>
 			@root.sort @sorter, col
 			@sorted = true
-		catch e
-			log.error "Problem sorting: " + e
-			log.exception e
-		finally
 			@updateColumnSortUI @sorter, col
-			@endUpdateBatch()
-
-	beginUpdateBatch: ->
-		return unless @treebox
-		@treebox.beginUpdateBatch()
-
-	endUpdateBatch: ->
-		return unless @treebox
-		@treebox.endUpdateBatch()
 
 	filterAndSort: (rules, sorter) ->
 		count = 0
-		@beginUpdateBatch()
-		try
+		@update =>
 			count = @root.filterAndSort rules, sorter
-		finally
-			@endUpdateBatch()
 		count
+
+	update: (fn) ->
+		if @treebox
+			@treebox.beginUpdateBatch()
+			try
+				fn()
+			finally
+				@treebox.endUpdateBatch()
+		else
+			fn()
 
 	updateColumnSortUI: (sorter, col) ->
 		return unless col and @tree
@@ -161,4 +211,4 @@ class CommonView
 		col.element.setAttribute 'sortDirection', direction
 		@tree.setAttribute 'sortDirection', direction
 
-module.exports = CommonView
+module.exports = TreeView
