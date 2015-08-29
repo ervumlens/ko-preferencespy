@@ -40,7 +40,7 @@ class PreferenceContainer
 	id: ->
 		@container.id
 
-	visitNames: (visitor) ->
+	visitNames: (visitor, sourceHint) ->
 		log.warn "Called 'visitNames' on a mystery container"
 
 	# Returns the value for the preference named by the id.
@@ -88,10 +88,10 @@ class PreferenceSet extends PreferenceContainer
 	getAllRowCount: ->
 		return
 
-	visitNames: (visitor) ->
+	visitNames: (visitor, sourceHint = null) ->
 		#log.warn "Called 'visitNames' on a PrefSet with #{@count} prefs"
 		for id in @allIds
-			visitor id, (args...) => @fetchValues args...
+			visitor id, sourceHint, (args...) => @fetchValues args...
 
 	isOverwritten: (id) ->
 		@container.hasPrefHere(id)
@@ -101,21 +101,21 @@ class OrderedPreference extends PreferenceContainer
 		@count = @container.length
 		@name = '(empty)' if @isEmpty()
 
-	visitNames: (visitor) ->
+	visitNames: (visitor, sourceHint = null) ->
 		#log.warn "Called 'visitNames' on a OrderedPrefs with #{@count} prefs"
 		for id in [0 ... @count]
-			visitor id, (args...) => @fetchValues args...
+			visitor id, sourceHint, (args...) => @fetchValues args...
 
 class PreferenceCache extends PreferenceContainer
 	constructor: (@container) ->
 		@count = @container.length
 		@name = '(empty)' if @isEmpty()
 
-	visitNames: (visitor) ->
+	visitNames: (visitor, sourceHint = null) ->
 		e = @container.enumPreferences()
 		while e.hasMoreElements()
 			prefId = e.getNext().id
-			visitor prefId, (id, target) => @fetchValues id, target
+			visitor prefId, sourceHint, (id, target) => @fetchValues id, target
 
 	fetchValues: (id, target) ->
 		target.type = 'object'
@@ -124,18 +124,6 @@ class PreferenceCache extends PreferenceContainer
 
 class PrefData
 	meta: []
-
-	constructor: (rootPrefSet) ->
-		@root = new PreferenceSet rootPrefSet
-
-	addChildren: (root) ->
-		@root.addChildren root
-
-	filterAndSort: ->
-		#copy self, apply filter, sort
-
-	visitNames: (visitor) ->
-		@root.visitNames visitor
 
 	@createContainer: (prefset) ->
 		extractObjectValue prefset
