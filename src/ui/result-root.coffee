@@ -1,10 +1,10 @@
 
 log = require('ko/logging').getLogger 'preference-spy'
 
-TreeRow = require 'preferencespy/ui/result-row'
+ResultRow = require 'preferencespy/ui/result-row'
 Sorter = require 'preferencespy/ui/sorter'
 
-class TreeRoot extends TreeRow
+class ResultRoot extends ResultRow
 	allRows: []
 
 	constructor: ->
@@ -64,4 +64,4 @@ class TreeRoot extends TreeRow
 		row = @rowAt index
 		row.nextSibling?
 
-module.exports = TreeRoot
+module.exports = ResultRoot

@@ -54,6 +54,14 @@ class StateRule extends FilterRule
 		return true if @any
 		row.getState() is @state
 
+class SourceRule extends FilterRule
+	constructor: (@source) ->
+		@any = @source is 'any'
+
+	accepts: (row) ->
+		return true if @any
+		row.getSourceHint() is @source
+
 class FilterRules
 	constructor: ->
 		@rules = []
@@ -64,6 +72,7 @@ class FilterRules
 		@rules.push @createValueRule()
 		@rules.push @createTypeRule()
 		@rules.push @createStateRule()
+		@rules.push @createSourceRule()
 
 	createNameRule: ->
 		text = document.getElementById('search-forname-text').value
@@ -88,6 +97,9 @@ class FilterRules
 
 	createStateRule: ->
 		new StateRule document.getElementById('search-forstate').value
+
+	createSourceRule: ->
+		new SourceRule document.getElementById('search-forsource').value
 
 	accepts: (row) ->
 		#Do all rules accept this row?

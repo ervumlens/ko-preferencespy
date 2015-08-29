@@ -1,14 +1,41 @@
 
 log = require('ko/logging').getLogger 'preference-spy'
 
-#A TreeRow contains either a preference value
+class ChildRowCache
+	constructor: ->
+		@cache = {}
+
+	createKey: (childRow) ->
+		childRow.getName() + "///" + childRow.getSourceHint()
+
+	addChild: (childRow) ->
+		key = @createKey childRow
+		@cache[key] = childRow
+		#log.warn "Cache added child #{key}. Now contains #{@size()} children."
+
+	dispose: ->
+		for key, child of @cache
+			child.dispose()
+
+	size: ->
+		Object.keys(@cache).length
+
+	isEmpty: ->
+		Object.keys(@cache).length is 0
+
+	visitChildren: (visitor) ->
+		visitor(child) for key, child of @cache
+
+#A ResultRow contains either a preference value
 #or the root of a preference set
-class TreeRow
+class ResultRow
 	containerState: 'closed'
 	depth: -1
 	visible: true
 
-	constructor: (@name, @parent, @loader) ->
+	constructor: (@name, @parent, @sourceHint, @loader) ->
+		# Make sure to fully initialize before passing @ anywhere.
+
 		@parent.addChild @
 
 	index: ->
@@ -29,8 +56,9 @@ class TreeRow
 	addChild: (childRow) ->
 		childRow.root = @root
 
-		@nameToChild = {} unless @nameToChild
-		@nameToChild[childRow.getName()] = childRow
+		@cache = new ChildRowCache unless @cache
+
+		@cache.addChild childRow
 
 		@children = [] unless @children
 		@children.push childRow
@@ -48,16 +76,14 @@ class TreeRow
 		@parent = null
 		@container = null
 
-		for name, child of @nameToChild
-			child.dispose()
-
-		@nameToChild = null
+		if @cache
+			@cache.dispose()
+			@cache = null
 
 	clearChildren: ->
 		return unless @hasChildren()
 
-		#Never clear @nameToChild. It only caches
-		#the children and is not involved in UI decisions.
+		#Never clear @cache. It is not involved in UI decisions.
 
 		for child in @children
 			child.nextSibling = null
@@ -127,13 +153,11 @@ class TreeRow
 	loadChildren: ->
 		@load()
 		#log.warn "Populating #{@name}? it has #{@children?.length} children and #{@container?} container"
-		return if @nameToChild or not @container
+		return if @cache or not @container
 
 		@container.visitNames (name, sourceHint, loader) =>
 			#log.warn "Added #{name}"
-			row = new TreeRow name, @, loader
-			row.sourceHint = sourceHint
-
+			row = new ResultRow name, @, sourceHint, loader
 
 	toggleOpen: ->
 		@loadChildren()
@@ -198,7 +222,10 @@ class TreeRow
 
 		#Get a list of all children, visible or otherwise.
 		allChildren = []
-		allChildren.push child for name, child of @nameToChild
+
+		@cache.visitChildren (child) -> allChildren.push child
+
+		#log.warn "Cache gave me #{allChildren.length} children"
 
 		#Don't mess with filtering nested rows.
 		@closeChildren()
@@ -219,4 +246,4 @@ class TreeRow
 
 		goodChildren.length
 
-module.exports = TreeRow
+module.exports = ResultRow

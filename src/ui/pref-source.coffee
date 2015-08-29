@@ -32,7 +32,8 @@ class PrefSource
 
 	visitPrefNames: (visitor) ->
 		throw new Error("No container available for #{@id}") unless @container
-		@container.visitNames visitor
+		# Treat normal prefs like view prefs
+		@container.visitNames visitor, 'view'
 
 class ProjectSource extends PrefSource
 	@interface: Ci.koIProject

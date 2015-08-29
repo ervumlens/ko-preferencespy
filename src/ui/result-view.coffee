@@ -2,11 +2,10 @@
 
 log = require('ko/logging').getLogger 'preference-spy'
 
-TreeRow 	= require 'preferencespy/ui/result-row'
-TreeRoot	= require 'preferencespy/ui/result-root'
+ResultRow 	= require 'preferencespy/ui/result-row'
+ResultRoot	= require 'preferencespy/ui/result-root'
 Sorter		= require 'preferencespy/ui/sorter'
 FilterRules	= require 'preferencespy/ui/result-filter-rules'
-
 
 COLID_NAME  = 'result-namecol'
 COLID_VALUE = 'result-valuecol'
@@ -50,16 +49,17 @@ sourceSorter = new Sorter COLID_SOURCE, (a, b) ->
 	if asource is bsource
 		a.getName() > b.getName()
 	else
-		asource > bsource
+		# This is flipped from usual because we want "view" above "file".
+		asource < bsource
 
-#A TreeView implements nsITreeView
-class TreeView
+#A ResultView implements nsITreeView
+class ResultView
 	sorted: false
-	sorter: nameSorter
+	sorter: sourceSorter
 
 	constructor: ->
 		#Root is a virtual row under which all top-level rows belong.
-		@root = new TreeRoot
+		@root = new ResultRoot
 		@rules = new FilterRules
 
 		@.__defineGetter__ 'rowCount', =>
@@ -73,15 +73,14 @@ class TreeView
 
 	clear: ->
 		@root.dispose()
-		@root = new TreeRoot
+		@root = new ResultRoot
 		@root.treebox = @treebox
 
 	load: (prefSource) ->
 		@clear()
 
 		prefSource.visitPrefNames (name, sourceHint, loader) =>
-			row = new TreeRow name, @root, loader
-			row.sourceHint = sourceHint
+			row = new ResultRow name, @root, sourceHint, loader
 
 	rowAt: (index) ->
 		@root.rowAt index
@@ -237,4 +236,4 @@ class TreeView
 	dispose: ->
 		@root.dispose()
 
-module.exports = TreeView
+module.exports = ResultView
