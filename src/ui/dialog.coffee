@@ -16,9 +16,14 @@ monitorView = null
 
 @PreferenceSpyOnLoad = ->
 	log.warn "PreferenceSpyOnLoad"
-	sourceView = new SourceView
-	resultView = new ResultView
+
+	mainWindow = window.arguments[0].window
+	#log.warn "PreferenceSpyOnLoad::arguments contains window? #{sourceWindow}"
+
+	sourceView = new SourceView mainWindow
+	resultView = new ResultView mainWindow
 	monitorView = 0
+
 
 @PreferenceSpyOnSourceSelected = ->
 	log.warn "PreferenceSpyOnSourceSelected"
@@ -26,12 +31,15 @@ monitorView = null
 	if prefset
 		document.getElementById('result-pref-id').value = prefset.id()
 		resultView.load prefset
+	else
+		document.getElementById('result-pref-id').value = ""
+		resultView.clear()
 
 @PreferenceSpyOnUnload = ->
 	log.warn "PreferenceSpyOnUnload"
 	sourceView.dispose() if sourceView
 	resultView.dispose() if resultView
-	
+
 @PreferenceSpyOnResize = ->
 	#log.warn "PreferenceSpyOnResize"
 

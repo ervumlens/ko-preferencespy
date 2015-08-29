@@ -48,21 +48,32 @@ class TreeView
 	constructor: ->
 		#Root is a virtual row under which all top-level rows belong.
 		@root = new TreeRoot
+		@rules = new FilterRules
 
-		@.__defineGetter__ 'rowCount', ->
-			@root.visibleRowCount()
+		@.__defineGetter__ 'rowCount', =>
+			@visibleRowCount()
 
 		@tree = document.getElementById 'result'
 		@tree.view = @
 
+	visibleRowCount: ->
+		@root.visibleRowCount()
+
+	clear: ->
+		@update =>
+			@root.dispose()
+			@root = new TreeRoot
+			@root.treebox = @treebox
+		@treebox.invalidate()
+
 	load: (prefData) ->
+		@clear()
 
 		@update =>
-			@root.clearChildren()
-
 			prefData.visitNames (name, loader) =>
 				new TreeRow name, @root, loader
 
+		@filterAndSort @rules, @sorter
 
 	rowAt: (index) ->
 		@root.rowAt index
@@ -149,13 +160,11 @@ class TreeView
 
 	doSearch: ->
 		log.warn "ResultView::doSearch"
-
-		rules = new FilterRules
 		result = null
 
 		try
-			rules.load()
-			result = @filterAndSort rules, @sorter
+			@rules.load()
+			result = @filterAndSort @rules, @sorter
 		catch e
 			result = "Error: #{e.message}"
 
@@ -193,6 +202,7 @@ class TreeView
 			try
 				fn()
 			finally
+				@treebox.invalidate()
 				@treebox.endUpdateBatch()
 		else
 			fn()
@@ -212,6 +222,6 @@ class TreeView
 		@tree.setAttribute 'sortDirection', direction
 
 	dispose: ->
-		
+		@root.dispose()
 
 module.exports = TreeView

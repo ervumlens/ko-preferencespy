@@ -42,6 +42,17 @@ class TreeRow
 
 		@lastChild = childRow
 
+	dispose: ->
+		@clearChildren()
+		@root = null
+		@parent = null
+		@container = null
+
+		for name, child of @nameToChild
+			child.dispose()
+			
+		@nameToChild = null
+
 	clearChildren: ->
 		return unless @hasChildren()
 

@@ -90,7 +90,7 @@ disableAllNodes = (cmdset) ->
 
 	@openNewDialog = (window) ->
 		winOpts = 'centerscreen,chrome,resizable,scrollbars,dialog=no,close';
-		window.openDialog 'chrome://preferencespy/content/main-dialog.xul', '_blank', winOpts
+		window.openDialog 'chrome://preferencespy/content/main-dialog.xul', '_blank', winOpts, {window}
 
 
 ).call module.exports

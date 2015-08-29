@@ -55,6 +55,9 @@ class StateRule extends FilterRule
 		row.getState() is @state
 
 class FilterRules
+	constructor: ->
+		@rules = []
+
 	load: ->
 		@rules = []
 		@rules.push @createNameRule()

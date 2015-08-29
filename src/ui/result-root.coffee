@@ -18,6 +18,10 @@ class TreeRoot extends TreeRow
 		super
 		@allRows.push childRow
 
+	dispose: ->
+		super
+		@treebox = null
+
 	clearChildren: ->
 		super
 		@allRows = []

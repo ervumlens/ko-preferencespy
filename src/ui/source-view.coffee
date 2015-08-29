@@ -13,84 +13,19 @@ partService = Cc["@activestate.com/koPartService;1"].getService Ci.koIPartServic
 
 SourceRow = require 'preferencespy/ui/source-row'
 SourceRoot = require 'preferencespy/ui/source-root'
-
-
-class SourceActiveRoot extends SourceRoot
-	opened: true
-
-	constructor: (view) ->
-		super view, 'Active'
-		@children.push new SourceRow @, 'global', 'global'
-		#TODO add global and anything open
-		@resetCurrentProjects true
-		@resetCurrentFiles true
-		@resetCurrentEditors true
-		observerService.addObserver @, 'current_project_changed', false
-
-	resetCurrentProjects: (startup) ->
-		#https://github.com/Komodo/KomodoEdit/blob/master/src/projects/koIProject.p.idl
-
-		@update =>
-			@setCurrentProject partService.currentProject, startup
-
-	setCurrentProject: (project, startup) ->
-		addChild = true
-
-		if not project
-			# No project, so everyone gets a '-'.
-			addChild = false
-			for child in @children
-				break if child.prefRootKey is 'docStateMRU'
-				continue unless child.prefRootKey is 'viewStateMRU'
-				child.tag = '-'
-
-		else if not startup
-			# We have a project loading after we've already initialized.
-			# If we've seen the project before, reset its tag. Otherwise,
-			# the new project gets a '+' and everyone else gets a '-'.
-			for child in @children
-				break if child.prefRootKey is 'docStateMRU'
-				continue unless child.prefRootKey is 'viewStateMRU'
-				if child.prefKey is project.url
-					child.tag = ''
-					addChild = false
-				else
-					child.tag = '-'
-
-		# Else we're starting up and we need a new child here.
-
-		if addChild
-			child = new SourceRow @, project.name, 'viewStateMRU', project.url
-			child.tag = '+' unless startup
-			@children.splice 1, 0, child
-
-
-	resetCurrentFiles: (startup = false) ->
-
-	resetCurrentEditors: (startup = false) ->
-
-	observe: (subject, topic, data) ->
-		log.warn "SourceActiveRoot::observe #{topic}"
-		switch topic
-			when 'current_project_changed' then @resetCurrentProjects()
-
-
-	dispose: ->
-		try
-			observerService.removeObserver @, 'current_project_changed'
-		catch
+SourceActiveRoot = require 'preferencespy/ui/source-active-root'
 
 class SourceView
 	sorted: false
 	selection: null
 
-	constructor: ->
+	constructor: (@window) ->
 		#log.warn "SourceView::constructor"
 
 		@.__defineGetter__ 'rowCount', =>
 			@getRowCount()
 
-		@activeSourcesRow = new SourceActiveRoot @
+		@activeSourcesRow = new SourceActiveRoot @, @window
 		@allProjectsRow = new SourceRoot @, 'All Projects'
 		@allFilesRow = new SourceRoot @, 'All Files'
 		@roots = [@activeSourcesRow, @allProjectsRow, @allFilesRow]
