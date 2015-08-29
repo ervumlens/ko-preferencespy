@@ -67,6 +67,9 @@ class TreeRow
 		@children = null
 
 	load: ->
+		if typeof @loader isnt 'function'
+			throw new Error "ResultRow \"#{@name}\" cannot use loader of type #{typeof @loader}"
+
 		@loader @name, @
 		@valueString = @value.toString()
 		@state = if @overwritten then 'overwritten' else 'inherited'
@@ -77,6 +80,7 @@ class TreeRow
 			when 'result-namecol' then @getName()
 			when 'result-valuecol' then @getValueString()
 			when 'result-typecol' then @getType()
+			when 'result-sourcecol' then @getSourceHint()
 			when 'result-overwrittencol'
 				if @getOverwritten()
 					'✓'
@@ -97,6 +101,9 @@ class TreeRow
 	getType: ->
 		@load()
 		@type
+
+	getSourceHint: ->
+		@sourceHint or ''
 
 	getOverwritten: ->
 		@load()
@@ -122,9 +129,10 @@ class TreeRow
 		#log.warn "Populating #{@name}? it has #{@children?.length} children and #{@container?} container"
 		return if @nameToChild or not @container
 
-		@container.visitNames (name, loader) =>
+		@container.visitNames (name, sourceHint, loader) =>
 			#log.warn "Added #{name}"
 			row = new TreeRow name, @, loader
+			row.sourceHint = sourceHint
 
 
 	toggleOpen: ->

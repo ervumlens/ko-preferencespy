@@ -12,6 +12,7 @@ COLID_NAME  = 'result-namecol'
 COLID_VALUE = 'result-valuecol'
 COLID_TYPE  = 'result-typecol'
 COLID_STATE = 'result-overwrittencol'
+COLID_SOURCE = 'result-sourcecol'
 
 nameSorter  = new Sorter COLID_NAME, (a, b) ->
 	a.getName() > b.getName()
@@ -42,6 +43,15 @@ stateSorter = new Sorter COLID_STATE, (a, b) ->
 		# sort order is not the mathematical order.
 		astate < bstate
 
+
+sourceSorter = new Sorter COLID_SOURCE, (a, b) ->
+	asource = a.getSourceHint()
+	bsource = b.getSourceHint()
+	if asource is bsource
+		a.getName() > b.getName()
+	else
+		asource > bsource
+
 #A TreeView implements nsITreeView
 class TreeView
 	sorted: false
@@ -67,10 +77,11 @@ class TreeView
 		@root.treebox = @treebox
 
 	load: (prefSource) ->
-		@clear
+		@clear()
 
-		prefSource.visitPrefNames (name, loader) =>
-			new TreeRow name, @root, loader
+		prefSource.visitPrefNames (name, sourceHint, loader) =>
+			row = new TreeRow name, @root, loader
+			row.sourceHint = sourceHint
 
 	rowAt: (index) ->
 		@root.rowAt index
@@ -133,6 +144,7 @@ class TreeView
 			when COLID_VALUE then @sortByValue(col)
 			when COLID_TYPE  then @sortByType(col)
 			when COLID_STATE then @sortByState(col)
+			when COLID_SOURCE then @sortBySource(col)
 
 	sortByName: (col) ->
 		@doSort nameSorter, col
@@ -145,6 +157,9 @@ class TreeView
 
 	sortByState: (col) ->
 		@doSort stateSorter, col
+
+	sortBySource: (col) ->
+		@doSort sourceSorter, col
 
 	getParentIndex: (index) ->
 		@root.parentIndex index

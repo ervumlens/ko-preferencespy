@@ -2,6 +2,7 @@
 
 log = require('ko/logging').getLogger 'preference-spy'
 PrefData = require 'preferencespy/ui/pref-data'
+prefService = Cc["@activestate.com/koPrefService;1"].getService Ci.koIPrefService
 
 qiFactory = (obj, ctors...) ->
 	for ctor in ctors
@@ -30,12 +31,8 @@ class PrefSource
 		result
 
 	visitPrefNames: (visitor) ->
-		container = @getContainer()
-		container.visitNames visitor
-
-	getContainer: ->
 		throw new Error("No container available for #{@id}") unless @container
-		@container
+		@container.visitNames visitor
 
 class ProjectSource extends PrefSource
 	@interface: Ci.koIProject
@@ -44,6 +41,19 @@ class ProjectSource extends PrefSource
 		@displayName = @project.name.replace '.komodoproject', ''
 		@container = PrefData.createContainer @project.prefset
 		@id = @container.id()
+		@url = @project.url
+
+	visitPrefNames: (visitor) ->
+		# Projects have two sets of prefs: one for the runtime data and
+		# another for offline.
+		@container.visitNames visitor, 'view'
+		cache = prefService.getPrefs 'viewStateMRU'
+		if cache.hasPref @url
+			log.warn "Found cache prefs for #{@url}"
+			offlineContainer = PrefData.createContainer(cache.getPref @url)
+			offlineContainer.visitNames visitor, 'file'
+		else
+			log.warn "No cache prefs for #{@url}"
 
 class ViewSource extends PrefSource
 	@interface: Ci.koIView
@@ -53,7 +63,19 @@ class ViewSource extends PrefSource
 		@displayName = name or '(new file)'
 		@container = PrefData.createContainer @view.prefs
 		@id = @container.id()
+		@uri = @view.koDoc?.file?.URI
 
+	visitPrefNames: (visitor) ->
+		# Projects have two sets of prefs: one for the runtime data and
+		# another for offline.
+		@container.visitNames visitor, 'view'
+		cache = prefService.getPrefs 'docStateMRU'
+		if cache.hasPref @uri
+			log.warn "Found cache prefs for #{@uri}"
+			offlineContainer = PrefData.createContainer(cache.getPref @uri)
+			offlineContainer.visitNames visitor, 'file'
+		else
+			log.warn "No cache prefs for #{@uri}"
 
 class OfflineFileSource extends PrefSource
 	constructor: (opts) ->
