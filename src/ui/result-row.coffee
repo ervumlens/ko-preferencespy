@@ -38,6 +38,12 @@ class ResultRow
 
 		@parent.addChild @
 
+		# Call the loader now. There's no point in making the call
+		# lazy because everything is going to be loaded anyway in
+		# order to handle the initial sorted.
+
+		@load()
+
 	index: ->
 		if @prevSibling
 			@prevSibling.lastIndex() + 1
@@ -99,7 +105,6 @@ class ResultRow
 		@loader @name, @
 		@valueString = @value.toString()
 		@state = if @overwritten then 'overwritten' else 'inherited'
-		@load = ->
 
 	getText: (col) ->
 		switch col.id
@@ -117,41 +122,33 @@ class ResultRow
 		@name
 
 	getValue: ->
-		@load()
 		@value
 
 	getValueString: ->
-		@load()
 		@valueString
 
 	getType: ->
-		@load()
 		@type
 
 	getSourceHint: ->
 		@sourceHint or ''
 
 	getOverwritten: ->
-		@load()
 		@overwritten
 
 	getState: ->
-		@load()
 		@state
 
 	isContainer: ->
-		@load()
 		@container?
 
 	isContainerEmpty: ->
-		@load()
 		if @container then @container.isEmpty() else true
 
 	childCount: ->
 		@children?.length or 0
 
 	loadChildren: ->
-		@load()
 		#log.warn "Populating #{@name}? it has #{@children?.length} children and #{@container?} container"
 		return if @cache or not @container
 
