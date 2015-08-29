@@ -20,14 +20,19 @@ monitorView = null
 	mainWindow = window.arguments[0].window
 	#log.warn "PreferenceSpyOnLoad::arguments contains window? #{sourceWindow}"
 
-	resultView = new ResultView mainWindow
-	sourceView = new SourceView mainWindow, resultView
-	monitorView = 0
-
+	try
+		resultView = new ResultView mainWindow
+		sourceView = new SourceView mainWindow, resultView
+		monitorView = 0
+	catch e
+		log.exception e
 
 @PreferenceSpyOnSourceSelected = ->
 	log.warn "PreferenceSpyOnSourceSelected"
-	sourceView.selectionChanged()
+	try
+		sourceView.selectionChanged()
+	catch e
+		log.exception e
 
 @PreferenceSpyOnUnload = ->
 	log.warn "PreferenceSpyOnUnload"
