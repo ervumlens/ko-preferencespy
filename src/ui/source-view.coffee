@@ -14,6 +14,8 @@ partService = Cc["@activestate.com/koPartService;1"].getService Ci.koIPartServic
 SourceRow = require 'preferencespy/ui/source-row'
 SourceRoot = require 'preferencespy/ui/source-root'
 SourceActiveRoot = require 'preferencespy/ui/source-active-root'
+SourceProjectsRoot = require 'preferencespy/ui/source-projects-root'
+SourceFilesRoot = require 'preferencespy/ui/source-files-root'
 
 class SourceView
 	sorted: false
@@ -26,8 +28,8 @@ class SourceView
 			@getRowCount()
 
 		@activeSourcesRow = new SourceActiveRoot @, @window
-		@allProjectsRow = new SourceRoot @, 'All Projects'
-		@allFilesRow = new SourceRoot @, 'All Files'
+		@allProjectsRow = new SourceProjectsRoot @
+		@allFilesRow = new SourceFilesRoot @
 		@roots = [@activeSourcesRow, @allProjectsRow, @allFilesRow]
 		@reindex()
 		@tree = document.getElementById 'sources'
