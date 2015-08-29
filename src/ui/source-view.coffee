@@ -19,7 +19,7 @@ class SourceView
 	sorted: false
 	selection: null
 
-	constructor: (@window) ->
+	constructor: (@window, @resultView) ->
 		#log.warn "SourceView::constructor"
 
 		@.__defineGetter__ 'rowCount', =>
@@ -154,8 +154,6 @@ class SourceView
 			root.toggleOpen()
 			@reindex()
 
-	doSearch: ->
-
 	update: (fn) ->
 		if @treebox
 			@treebox.beginUpdateBatch()
@@ -171,6 +169,18 @@ class SourceView
 		#log.warn "SourceView::isSelectable #{index}, #{col.id}"
 		true
 
+	selectionChanged: ->
+		prefset = @getPrefContainerFromSelection()
+
+		if prefset
+			document.getElementById('result-pref-id').value = prefset.id()
+			@resultView.load prefset, false
+		else
+			document.getElementById('result-pref-id').value = ""
+			@resultView.clear false
+
+		@resultView.doSearch()
+
 	getPrefContainerFromSelection: ->
 		return unless @selection.count is 1
 		index = @selection.currentIndex
@@ -178,13 +188,13 @@ class SourceView
 
 
 	performAction: (action) ->
-		#log.warn "SourceView::performAction #{action}"
+		log.warn "SourceView::performAction #{action}"
 
 	performActionOnRow: (action, index) ->
-		#log.warn "SourceView::performActionOnRow #{action}, #{index}"
+		log.warn "SourceView::performActionOnRow #{action}, #{index}"
 
 	performActionOnCell: (action, index, col) ->
-		#log.warn "SourceView::performActionOnCell #{action}, #{index}, #{col.id}"
+		log.warn "SourceView::performActionOnCell #{action}, #{index}, #{col.id}"
 
 	dispose: ->
 		@roots.forEach (root) -> root.dispose()

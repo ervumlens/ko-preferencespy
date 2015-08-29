@@ -20,21 +20,14 @@ monitorView = null
 	mainWindow = window.arguments[0].window
 	#log.warn "PreferenceSpyOnLoad::arguments contains window? #{sourceWindow}"
 
-	sourceView = new SourceView mainWindow
 	resultView = new ResultView mainWindow
+	sourceView = new SourceView mainWindow, resultView
 	monitorView = 0
 
 
 @PreferenceSpyOnSourceSelected = ->
 	log.warn "PreferenceSpyOnSourceSelected"
-	prefset = sourceView.getPrefContainerFromSelection()
-	if prefset
-		document.getElementById('result-pref-id').value = prefset.id()
-		resultView.load prefset, false
-	else
-		document.getElementById('result-pref-id').value = ""
-		resultView.clear false
-	@PreferenceSpy_DoSearch()
+	sourceView.selectionChanged()
 
 @PreferenceSpyOnUnload = ->
 	log.warn "PreferenceSpyOnUnload"
