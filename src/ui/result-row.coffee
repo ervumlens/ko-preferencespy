@@ -50,7 +50,7 @@ class TreeRow
 
 		for name, child of @nameToChild
 			child.dispose()
-			
+
 		@nameToChild = null
 
 	clearChildren: ->

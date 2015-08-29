@@ -59,19 +59,21 @@ class TreeView
 	visibleRowCount: ->
 		@root.visibleRowCount()
 
-	clear: ->
-		@update =>
-			@root.dispose()
-			@root = new TreeRoot
-			@root.treebox = @treebox
-		@treebox.invalidate()
+	clear: (updateUI = true) ->
+		@root.dispose()
+		@root = new TreeRoot
+		@root.treebox = @treebox
+
+		if updateUI
+			# Force a UI update
+			@filterAndSort @rules, @sorter
+
 
 	load: (prefData) ->
-		@clear()
+		@clear false
 
-		@update =>
-			prefData.visitNames (name, loader) =>
-				new TreeRow name, @root, loader
+		prefData.visitNames (name, loader) =>
+			new TreeRow name, @root, loader
 
 		@filterAndSort @rules, @sorter
 
