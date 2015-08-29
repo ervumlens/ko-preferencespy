@@ -170,22 +170,21 @@ class SourceView
 		true
 
 	selectionChanged: ->
-		prefset = @getPrefContainerFromSelection()
+		source = @getPrefSourceFromSelection()
 
-		if prefset
-			document.getElementById('result-pref-id').value = prefset.id()
-			@resultView.load prefset, false
+		if source
+			document.getElementById('result-pref-id').value = source.id
+			@resultView.load source
 		else
 			document.getElementById('result-pref-id').value = ""
-			@resultView.clear false
+			@resultView.clear()
 
 		@resultView.doSearch()
 
-	getPrefContainerFromSelection: ->
+	getPrefSourceFromSelection: ->
 		return unless @selection.count is 1
 		index = @selection.currentIndex
-		@rootFor(index).getPrefContainer index
-
+		@rootFor(index).getPrefSource index
 
 	performAction: (action) ->
 		log.warn "SourceView::performAction #{action}"

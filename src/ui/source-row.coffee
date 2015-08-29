@@ -9,6 +9,7 @@ class SourceRow
 	name: '??'
 	tag: ''
 	constructor: (@root, @source) ->
+		throw new Error("Cannot create SourceRow without PrefSource object") unless @source
 		@name = @source.displayName
 
 	#load: ->
@@ -25,7 +26,8 @@ class SourceRow
 	#		log.warn "Cannot load source row #{@name}: no preference data configured."
 	#
 	#	@load = ->
-	getPrefContainer: ->
-		@source.getContainer()
+	#getPrefContainer: ->
+	#	@source.getContainer()
+
 
 module.exports = SourceRow

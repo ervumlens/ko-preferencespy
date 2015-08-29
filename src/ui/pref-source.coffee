@@ -26,13 +26,14 @@ class PrefSource
 
 		if not result
 			throw new Error("Cannot create PrefSource from #{source}")
+
 		result
 
-	load: ->
-		@load = ->
+	visitPrefNames: (visitor) ->
+		container = @getContainer()
+		container.visitNames visitor
 
 	getContainer: ->
-		@load()
 		throw new Error("No container available for #{@id}") unless @container
 		@container
 
@@ -41,39 +42,34 @@ class ProjectSource extends PrefSource
 
 	constructor: (@project) ->
 		@displayName = @project.name.replace '.komodoproject', ''
-
-	load: ->
-		super
 		@container = PrefData.createContainer @project.prefset
+		@id = @container.id()
 
 class ViewSource extends PrefSource
 	@interface: Ci.koIView
 
 	constructor: (@view) ->
 		name = @view.koDoc?.baseName
-		@displayName = name if name
-
-	load: ->
-		super
+		@displayName = name or '(new file)'
 		@container = PrefData.createContainer @view.prefs
+		@id = @container.id()
 
 
 class OfflineFileSource extends PrefSource
 	constructor: (opts) ->
-		@uri = opts.uri
+		@id = @uri = opts.uri
+
 
 class OfflineProjectSource extends PrefSource
 	constructor: (opts) ->
-		@uri = opts.uri
+		@id = @uri = opts.uri
 
 class ContainerSource extends PrefSource
 	@interface: Ci.koIPreferenceContainer
 
 	constructor: (@prefset) ->
 		@displayName = @prefset.id
-
-	load: ->
-		super
 		@container = PrefData.getContainer @prefset
+		@id = @container.id()
 
 module.exports = PrefSource

@@ -24,10 +24,10 @@ class SourceRoot
 			throw new Error "No child at index #{index} in root #{@name}(@index=#{@index})"
 		child
 
-	getPrefContainer: (index) ->
+	getPrefSource: (index) ->
 		#roots have no prefs themselves
 		return null if index is @index
-		@getChild(index).getPrefContainer()
+		@getChild(index).source
 
 	getName: (index) ->
 		#log.warn "SourceRoot::getName #{index}"
