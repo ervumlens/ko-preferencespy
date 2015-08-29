@@ -48,5 +48,4 @@ monitorView = null
 	#log.warn "PreferenceSpyOnTabSelected"
 
 @PreferenceSpy_DoSearch = ->
-	result = resultView.doSearch()
-	document.getElementById('search-message').value = result
+	resultView.doSearch()

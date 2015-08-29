@@ -175,13 +175,14 @@ class TreeView
 
 		log.warn "ResultView::doSearch -> #{result}"
 
-		if typeof result is 'number'
-			switch result
-				when 0 then 'No matches found.'
-				when 1 then '1 match found.'
-				else "#{result} matches found."
-		else
-			result.toString()
+		document.getElementById('search-message').value =
+			if typeof result is 'number'
+				switch result
+					when 0 then 'No matches found.'
+					when 1 then '1 match found.'
+					else "#{result} matches found."
+			else
+				result.toString()
 
 	doSort: (sorter, col) ->
 
