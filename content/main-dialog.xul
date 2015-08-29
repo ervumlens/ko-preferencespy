@@ -167,7 +167,11 @@ http://mozilla.org/MPL/2.0/.
 												 label="Type" />
 										<splitter class="tree-splitter"/>
 										<treecol id="result-overwrittencol"
-												 label="Overwritten" />
+												 label="Overwritten"
+												 width="1em"/>
+										<splitter class="tree-splitter"/>
+										<treecol id="result-sourcecol"
+												 label="Source"/>
 									</treecols>
 									<treechildren id="result-children">
 									</treechildren>
