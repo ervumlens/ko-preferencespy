@@ -223,7 +223,8 @@ class ResultRow
 		#Get a list of all children, visible or otherwise.
 		allChildren = []
 
-		@cache.visitChildren (child) -> allChildren.push child
+		if @cache
+			@cache.visitChildren (child) -> allChildren.push child
 
 		#log.warn "Cache gave me #{allChildren.length} children"
 

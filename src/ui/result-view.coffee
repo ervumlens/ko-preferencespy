@@ -178,6 +178,7 @@ class ResultView
 			result = @filterAndSort @rules, @sorter
 		catch e
 			result = "Error: #{e.message}"
+			log.exception e
 
 		log.warn "ResultView::doSearch -> #{result}"
 
