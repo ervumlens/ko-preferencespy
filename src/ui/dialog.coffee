@@ -30,10 +30,11 @@ monitorView = null
 	prefset = sourceView.getPrefContainerFromSelection()
 	if prefset
 		document.getElementById('result-pref-id').value = prefset.id()
-		resultView.load prefset
+		resultView.load prefset, false
 	else
 		document.getElementById('result-pref-id').value = ""
-		resultView.clear()
+		resultView.clear false
+	@PreferenceSpy_DoSearch()
 
 @PreferenceSpyOnUnload = ->
 	log.warn "PreferenceSpyOnUnload"
@@ -47,4 +48,5 @@ monitorView = null
 	#log.warn "PreferenceSpyOnTabSelected"
 
 @PreferenceSpy_DoSearch = ->
-	resultView.doSearch()
+	result = resultView.doSearch()
+	document.getElementById('search-message').value = result

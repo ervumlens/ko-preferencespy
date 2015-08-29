@@ -46,12 +46,20 @@ class SourceView
 		#The number of rows is also the index of the last visible row plus 1.
 		@allFilesRow.lastIndex() + 1
 
-	reindex: ->
+	reindex: (removedIndices = null, updateUI = false) ->
+
 		lastIndex = 0
 		for root in @roots
 			root.index = lastIndex
 			log.warn "SourceView::reindex: #{root.name} index is now #{root.index}"
 			lastIndex = root.lastIndex() + 1
+
+		# We're reindexing after removing
+		if removedIndices and @selection.count and @selection.currentIndex in removedIndices
+			@selection.clearSelection()
+
+		if updateUI
+			@treebox.invalidate()
 
 	rootFor: (index) ->
 		for root in @roots

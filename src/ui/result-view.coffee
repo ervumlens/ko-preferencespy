@@ -69,13 +69,14 @@ class TreeView
 			@filterAndSort @rules, @sorter
 
 
-	load: (prefData) ->
+	load: (prefData, updateUI = true) ->
 		@clear false
 
 		prefData.visitNames (name, loader) =>
 			new TreeRow name, @root, loader
 
-		@filterAndSort @rules, @sorter
+		if updateUI
+			@filterAndSort @rules, @sorter
 
 	rowAt: (index) ->
 		@root.rowAt index
@@ -161,7 +162,7 @@ class TreeView
 		@treebox.invalidateRow index
 
 	doSearch: ->
-		log.warn "ResultView::doSearch"
+		#log.warn "ResultView::doSearch"
 		result = null
 
 		try

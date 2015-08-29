@@ -20,7 +20,7 @@ class SourceActiveRoot extends SourceRoot
 
 	constructor: (view, @window) ->
 		super view, 'Active'
-		@children.push new SourceRow @, 'global', 'global'
+		@children.push new SourceRow @, 'global', prefRootKey: 'global'
 		#TODO add global and anything open
 		@resetCurrentProjects true
 		@resetCurrentFiles true
@@ -45,41 +45,31 @@ class SourceActiveRoot extends SourceRoot
 			@window.removeEventListener event, @eventListener
 
 	resetCurrentProjects: (startup) ->
-		#https://github.com/Komodo/KomodoEdit/blob/master/src/projects/koIProject.p.idl
 
-		@update =>
-			@setCurrentProject partService.currentProject, startup
+			# Remove the existing project if it's there
+			remove = if @children[1]?.project then 1 else 0
+			removed = null
+			if partService.currentProject
+				project = partService.currentProject
+				child = new SourceRow @, project.name, prefset: project.prefset
+				child.url = project.url
+				child.project = true
+				removed = @children.splice 1, remove, child
+			else
+				removed = @children.splice 1, remove
 
-	setCurrentProject: (project, startup) ->
-		addChild = true
+			@view.reindex(removed, true) unless startup
+			#child = new SourceRow @, project.name, prefRootKey: 'viewStateMRU, prefKey: project.url
+			#child = new SourceRow @, project.name, prefset: project.prefset
+			#child.url = project.url
+			#child.project = true
+			#child.tag = '+' unless startup
+			#@children.splice 1, 0, child
 
-		if not project
-			# No project, so everyone gets a '-'.
-			addChild = false
-			for child in @children
-				break if child.prefRootKey is 'docStateMRU'
-				continue unless child.prefRootKey is 'viewStateMRU'
-				child.tag = '-'
-
-		else if not startup
-			# We have a project loading after we've already initialized.
-			# If we've seen the project before, reset its tag. Otherwise,
-			# the new project gets a '+' and everyone else gets a '-'.
-			for child in @children
-				break if child.prefRootKey is 'docStateMRU'
-				continue unless child.prefRootKey is 'viewStateMRU'
-				if child.prefKey is project.url
-					child.tag = ''
-					addChild = false
-				else
-					child.tag = '-'
-
-		# Else we're starting up and we need a new child here.
-
-		if addChild
-			child = new SourceRow @, project.name, 'viewStateMRU', project.url
-			child.tag = '+' unless startup
-			@children.splice 1, 0, child
+			#projectsObject = new Object()
+			#countObject = new Object()
+			## This is not a good way to find projects.
+			#partService.getProjects projectsObject, countObject
 
 
 	resetCurrentFiles: (startup = false) ->
@@ -92,11 +82,10 @@ class SourceActiveRoot extends SourceRoot
 		if startup
 			for view in views
 				log.warn "SourceActiveRoot::resetCurrentFiles: view.uid = #{view.uid}"
-				
+
 		else
 			for view in views
 				log.warn "SourceActiveRoot::resetCurrentFiles: view.uid = #{view.uid}"
-
 
 	resetCurrentEditors: (startup = false) ->
 
@@ -110,7 +99,8 @@ class SourceActiveRoot extends SourceRoot
 
 	dispose: ->
 		try
-			@unregisterObserverTopics()
-		catch
+			@unregisterListeners()
+		catch e
+			log.error e
 
 module.exports = SourceActiveRoot
