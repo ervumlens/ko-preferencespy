@@ -122,7 +122,7 @@ class PreferenceCache extends PreferenceContainer
 		target.value = '(container)'
 		target.container = extractObjectValue @container.getPref(id)
 
-module.exports = class PrefData
+class PrefData
 	meta: []
 
 	constructor: (rootPrefSet) ->
@@ -137,5 +137,10 @@ module.exports = class PrefData
 	visitNames: (visitor) ->
 		@root.visitNames visitor
 
+	@createContainer: (prefset) ->
+		extractObjectValue prefset
+
 	@getContainer: (prefset) ->
 		extractObjectValue prefset
+
+module.exports = PrefData

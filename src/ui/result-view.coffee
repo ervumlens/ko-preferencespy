@@ -38,7 +38,9 @@ stateSorter = new Sorter COLID_STATE, (a, b) ->
 	if astate is bstate
 		a.getName() > b.getName()
 	else
-		astate > bstate
+		# This is flipped from usual because the expected, natural
+		# sort order is not the mathematical order.
+		astate < bstate
 
 #A TreeView implements nsITreeView
 class TreeView

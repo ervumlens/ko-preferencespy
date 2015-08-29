@@ -12,6 +12,7 @@ viewService = Cc["@activestate.com/koViewService;1"].getService Ci.koIViewServic
 
 SourceRow = require 'preferencespy/ui/source-row'
 SourceRoot = require 'preferencespy/ui/source-root'
+PrefSource = require 'preferencespy/ui/pref-source'
 
 class SourceActiveRoot extends SourceRoot
 	opened: true
@@ -20,15 +21,40 @@ class SourceActiveRoot extends SourceRoot
 
 	constructor: (view, @window) ->
 		super view, 'Active'
-		@children.push new SourceRow @, 'global', prefRootKey: 'global'
-		#TODO add global and anything open
-		@resetCurrentProjects true
-		@resetCurrentFiles true
-		@resetCurrentEditors true
+
+		@initGlobal()
+		@initCurrentProjects()
+		@initCurrentViews()
 
 		@eventListener = (args...) => @handleWindowEvent args...
 
 		@registerListeners()
+
+	initGlobal: ->
+		@children.push new SourceRow(@, PrefSource.create prefService.prefs)
+
+	initCurrentProjects: ->
+		return unless partService.currentProject
+		@children.push new SourceRow(@, PrefSource.create partService.currentProject)
+
+	initCurrentViews: ->
+		countObject = new Object();
+		views = viewService.getAllViews '', countObject
+
+		for view in views
+			@children.push new SourceRow(@, PrefSource.create view)
+
+	resetCurrentProjects: ->
+	resetCurrentViews: ->
+
+	observe: (subject, topic, data) ->
+		log.warn "SourceActiveRoot::observe #{topic} (#{data})"
+		switch topic
+			when 'current_project_changed' then @resetCurrentProjects()
+
+	handleWindowEvent: (event) ->
+		log.warn "SourceActiveRoot::handleWindowEvent #{event.type}"
+
 
 	registerListeners: ->
 		for topic in @topics
@@ -43,59 +69,6 @@ class SourceActiveRoot extends SourceRoot
 
 		for event in @events
 			@window.removeEventListener event, @eventListener
-
-	resetCurrentProjects: (startup) ->
-
-			# Remove the existing project if it's there
-			remove = if @children[1]?.project then 1 else 0
-			removed = null
-			if partService.currentProject
-				project = partService.currentProject
-				child = new SourceRow @, project.name, prefset: project.prefset
-				child.url = project.url
-				child.project = true
-				removed = @children.splice 1, remove, child
-			else
-				removed = @children.splice 1, remove
-
-			@view.reindex(removed, true) unless startup
-			#child = new SourceRow @, project.name, prefRootKey: 'viewStateMRU, prefKey: project.url
-			#child = new SourceRow @, project.name, prefset: project.prefset
-			#child.url = project.url
-			#child.project = true
-			#child.tag = '+' unless startup
-			#@children.splice 1, 0, child
-
-			#projectsObject = new Object()
-			#countObject = new Object()
-			## This is not a good way to find projects.
-			#partService.getProjects projectsObject, countObject
-
-
-	resetCurrentFiles: (startup = false) ->
-		# Visit all the active views. Create a node for both
-		# the view itself and its underlying file (if it exists).
-
-		countObject = new Object();
-		views = viewService.getAllViews '', countObject
-
-		if startup
-			for view in views
-				log.warn "SourceActiveRoot::resetCurrentFiles: view.uid = #{view.uid}"
-
-		else
-			for view in views
-				log.warn "SourceActiveRoot::resetCurrentFiles: view.uid = #{view.uid}"
-
-	resetCurrentEditors: (startup = false) ->
-
-	observe: (subject, topic, data) ->
-		log.warn "SourceActiveRoot::observe #{topic} (#{data})"
-		switch topic
-			when 'current_project_changed' then @resetCurrentProjects()
-
-	handleWindowEvent: (event) ->
-		log.warn "SourceActiveRoot::handleWindowEvent #{event.type}"
 
 	dispose: ->
 		try
