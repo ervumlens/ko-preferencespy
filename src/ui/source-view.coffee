@@ -163,6 +163,11 @@ class SourceView
 	isContainerEmpty: (index) ->
 		#log.warn "SourceView::isContainerEmpty #{index}"
 		try
+
+			if @loading and index isnt 0 and @isRoot index
+				# Hide the contents of everything but "Active"
+				return true
+
 			root = @rootFor index
 			@rootFor(index).isEmpty()
 		catch e

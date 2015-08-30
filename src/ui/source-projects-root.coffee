@@ -23,10 +23,6 @@ class SourceProjectsRoot extends SourceRoot
 		@prefset = prefService.getPrefs 'viewStateMRU'
 		@container = PrefData.createContainer @prefset
 
-	isEmpty: ->
-		return super if @loaded
-		@container.isEmpty()
-
 	load: ->
 		super
 		@load = ->

@@ -23,10 +23,6 @@ class SourceFilesRoot extends SourceRoot
 		@prefset = prefService.getPrefs 'docStateMRU'
 		@container = PrefData.createContainer @prefset
 
-	isEmpty: ->
-		return super if @loaded
-		@container.isEmpty()
-
 	load: ->
 		super
 		@load = ->
