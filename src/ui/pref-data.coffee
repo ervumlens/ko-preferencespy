@@ -43,6 +43,18 @@ class PreferenceContainer
 	visitNames: (visitor, sourceHint) ->
 		log.warn "Called 'visitNames' on a mystery container"
 
+	addObserver: (observer) ->
+		observerService = @container.prefObserverService
+
+		if observerService
+			observerService.addObserver observer, '', false
+
+	removeObserver: (observer) ->
+		observerService = @container.prefObserverService
+
+		if observerService
+			observerService.removeObserver observer, ''
+
 	# Returns the value for the preference named by the id.
 	# `null` is returned if the id is invalid/removed/etc. XXX verify
 	# The type for the preference is optional. Pass it if it's

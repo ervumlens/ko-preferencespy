@@ -11,11 +11,21 @@ class ChildRowCache
 	addChild: (childRow) ->
 		key = @createKey childRow
 		@cache[key] = childRow
+
 		#log.warn "Cache added child #{key}. Now contains #{@size()} children."
+
+	reloadChildByName: (name) ->
+		#TODO make this more efficient
+		for key, child of @cache
+			if child.getName() is name
+				child.reload()
+
 
 	dispose: ->
 		for key, child of @cache
 			child.dispose()
+
+		@cache = null
 
 	size: ->
 		Object.keys(@cache).length
@@ -105,6 +115,13 @@ class ResultRow
 		@loader @name, @
 		@valueString = @value.toString()
 		@state = if @overwritten then 'overwritten' else 'inherited'
+
+	reload: ->
+		@load()
+
+	reloadChildByName: (name) ->
+		return unless @cache
+		@cache.reloadChildByName name
 
 	getText: (col) ->
 		switch col.id

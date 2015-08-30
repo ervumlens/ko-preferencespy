@@ -35,6 +35,13 @@ class PrefSource
 		# Treat normal prefs like view prefs
 		@container.visitNames visitor, 'view'
 
+	addObserver: (observer) ->
+		@container.addObserver observer
+
+	removeObserver: (observer) ->
+		@container.removeObserver observer
+
+
 class ProjectSource extends PrefSource
 	@interface: Ci.koIProject
 
@@ -43,18 +50,29 @@ class ProjectSource extends PrefSource
 		@container = PrefData.createContainer @project.prefset
 		@id = @container.id()
 		@url = @project.url
+		cache = prefService.getPrefs 'viewStateMRU'
+		if cache.hasPref @url
+			#log.warn "Found cache prefs for #{@url}"
+			@offlineContainer = PrefData.createContainer(cache.getPref @url)
+		else
+			#log.warn "No cache prefs for #{@url}"
 
 	visitPrefNames: (visitor) ->
 		# Projects have two sets of prefs: one for the runtime data and
 		# another for offline.
 		@container.visitNames visitor, 'view'
-		cache = prefService.getPrefs 'viewStateMRU'
-		if cache.hasPref @url
-			log.warn "Found cache prefs for #{@url}"
-			offlineContainer = PrefData.createContainer(cache.getPref @url)
-			offlineContainer.visitNames visitor, 'file'
-		else
-			log.warn "No cache prefs for #{@url}"
+		if @offlineContainer
+			@offlineContainer.visitNames visitor, 'file'
+
+	addObserver: (observer) ->
+		@container.addObserver observer
+		if @offlineContainer
+			@offlineContainer.addObserver observer
+
+	removeObserver: (observer) ->
+		@container.removeObserver observer
+		if @offlineContainer
+			@offlineContainer.removeObserver observer
 
 class ViewSource extends PrefSource
 	@interface: Ci.koIView
@@ -72,11 +90,21 @@ class ViewSource extends PrefSource
 		@container.visitNames visitor, 'view'
 		cache = prefService.getPrefs 'docStateMRU'
 		if cache.hasPref @uri
-			log.warn "Found cache prefs for #{@uri}"
+			#log.warn "Found cache prefs for #{@uri}"
 			offlineContainer = PrefData.createContainer(cache.getPref @uri)
 			offlineContainer.visitNames visitor, 'file'
 		else
-			log.warn "No cache prefs for #{@uri}"
+			#log.warn "No cache prefs for #{@uri}"
+
+	addObserver: (observer) ->
+		super
+		if @offlineContainer
+			@offlineContainer.addObserver observer
+
+	removeObserver: (observer) ->
+		super
+		if @offlineContainer
+			@offlineContainer.removeObserver observer
 
 class OfflineFileSource extends PrefSource
 	constructor: (opts) ->

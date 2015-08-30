@@ -57,6 +57,9 @@ class ResultView
 	sorted: false
 	sorter: sourceSorter
 
+	# Never access this directly. Use toggleAutoRefresh() instead.
+	refreshing: true
+
 	constructor: ->
 		#Root is a virtual row under which all top-level rows belong.
 		@root = new ResultRoot
@@ -72,15 +75,37 @@ class ResultView
 		@root.visibleRowCount()
 
 	clear: ->
-		@root.dispose()
-		@root = new ResultRoot
-		@root.treebox = @treebox
+		if @root
+			@root.dispose()
+			@root = new ResultRoot
+			@root.treebox = @treebox
 
-	load: (prefSource) ->
+		if @refreshing and @source
+			@source.removeObserver @
+
+	load: (source) ->
 		@clear()
+		@source = source
 
-		prefSource.visitPrefNames (name, sourceHint, loader) =>
+		@source.visitPrefNames (name, sourceHint, loader) =>
 			row = new ResultRow name, @root, sourceHint, loader
+
+		if @refreshing
+			@source.addObserver @
+
+	toggleAutoRefresh: ->
+		if @refreshing and @source
+			@source.removeObserver @
+
+		@refreshing = not @refreshing
+
+		if @refreshing and @source
+			@source.addObserver @
+
+	observe: (prefset, topic, data) ->
+		log.warn "ResultView::observe: #{prefset.id} -> #{topic}"
+		@root.reloadChildByName topic
+		@treebox.invalidate()
 
 	rowAt: (index) ->
 		@root.rowAt index
@@ -235,6 +260,6 @@ class ResultView
 		@tree.setAttribute 'sortDirection', direction
 
 	dispose: ->
-		@root.dispose()
+		@clear()
 
 module.exports = ResultView
