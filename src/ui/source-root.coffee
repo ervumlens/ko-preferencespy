@@ -10,6 +10,8 @@ class SourceRoot
 		@.__defineGetter__ 'childCount', =>
 			@children.length
 
+	load: ->
+
 	childIndex: (index) ->
 		index - @index - 1
 
@@ -72,6 +74,7 @@ class SourceRoot
 
 	toggleOpen: ->
 		#log.warn "SourceRoot::toggleOpen"
+		@load()
 		@opened = not @opened
 
 	parentIndex: ->

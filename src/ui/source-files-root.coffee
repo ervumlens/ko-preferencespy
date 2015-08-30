@@ -21,6 +21,11 @@ class SourceFilesRoot extends SourceRoot
 		@prefset = prefService.getPrefs 'docStateMRU'
 		@container = PrefData.createContainer @prefset
 
+	isEmpty: ->
+		@container.isEmpty()
+
+	load: ->
+		@load = ->
 		@container.visitNames (name) =>
 			return unless @prefset.hasPref name
 			source = PrefSource.create(@prefset.getPref name)
