@@ -30,7 +30,12 @@ class SourceView
 		@activeSourcesRow = new SourceActiveRoot @, @window
 		@allProjectsRow = new SourceProjectsRoot @
 		@allFilesRow = new SourceFilesRoot @
-		@roots = [@activeSourcesRow, @allProjectsRow, @allFilesRow]
+		@roots = [
+			@activeSourcesRow,
+			@allProjectsRow,
+			@allFilesRow,
+		]
+
 		@reindex()
 		@tree = document.getElementById 'sources'
 		@tree.view = @

@@ -16,6 +16,7 @@ qiFactory = (obj, ctors...) ->
 class PrefSource
 	displayName: '(unknown name)'
 	id: '(unknown id)'
+	sourceHint: 'view'
 
 	@create: (source) ->
 		# Possible arg types: koIProject, koIView, koIPreferenceContainer, {uri, project/file}
@@ -32,8 +33,7 @@ class PrefSource
 
 	visitPrefNames: (visitor) ->
 		throw new Error("No container available for #{@id}") unless @container
-		# Treat normal prefs like view prefs
-		@container.visitNames visitor, 'view'
+		@container.visitNames visitor, @sourceHint
 
 	addObserver: (observer) ->
 		@container.addObserver observer
@@ -105,15 +105,6 @@ class ViewSource extends PrefSource
 		super
 		if @offlineContainer
 			@offlineContainer.removeObserver observer
-
-class OfflineFileSource extends PrefSource
-	constructor: (opts) ->
-		@id = @uri = opts.uri
-
-
-class OfflineProjectSource extends PrefSource
-	constructor: (opts) ->
-		@id = @uri = opts.uri
 
 class ContainerSource extends PrefSource
 	@interface: Ci.koIPreferenceContainer

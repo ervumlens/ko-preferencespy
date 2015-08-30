@@ -18,4 +18,21 @@ class SourceFilesRoot extends SourceRoot
 	constructor: (view) ->
 		super view, 'All Files'
 
+		@prefset = prefService.getPrefs 'docStateMRU'
+		@container = PrefData.createContainer @prefset
+
+		@container.visitNames (name) =>
+			return unless @prefset.hasPref name
+			source = PrefSource.create(@prefset.getPref name)
+			source.sourceHint = 'file'
+			child = new SourceRow @, source
+
+			# Trim the name so that it fits in the tree
+
+			trimFrom = child.name.lastIndexOf '/'
+			if trimFrom != -1
+				child.name = child.name[trimFrom + 1 .. -1]
+
+			@addChild child
+
 module.exports = SourceFilesRoot

@@ -24,7 +24,9 @@ class SourceProjectsRoot extends SourceRoot
 
 		@container.visitNames (name) =>
 			return unless @prefset.hasPref name
-			child = new SourceRow(@, PrefSource.create @prefset.getPref name)
+			source = PrefSource.create(@prefset.getPref name)
+			source.sourceHint = 'file'
+			child = new SourceRow @, source
 
 			# Trim the name so that it fits in the tree
 
