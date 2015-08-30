@@ -50,6 +50,7 @@ http://mozilla.org/MPL/2.0/.
 			<tabpanels flex="1">
 				<tabpanel>
 					<!-- pref view tab -->
+					<vbox flex="1">
 					<hbox flex="1">
 						<vbox>
 							<!-- search box -->
@@ -108,7 +109,7 @@ http://mozilla.org/MPL/2.0/.
 							</groupbox>
 							<!-- view details -->
 							<groupbox>
-								<caption label="Search Preferences"/>
+								<caption label="Search"/>
 								<grid>
 									<columns>
 										<column/>
@@ -217,6 +218,8 @@ http://mozilla.org/MPL/2.0/.
 								</tree>
 						</vbox>
 					</hbox>
+					<progressmeter id="view-progress" mode="determined" value="50" hidden="true"/>
+					</vbox>
 				</tabpanel>
 
 				<tabpanel>
