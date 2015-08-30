@@ -24,11 +24,11 @@ http://mozilla.org/MPL/2.0/.
   screenX="20"
   screenY="20"
   persist="screenX screenY width height"
-  onload="PreferenceSpyOnLoad();"
-  onblur="PreferenceSpyOnBlur();"
-  onfocus="PreferenceSpyOnFocus();"
-  onunload="PreferenceSpyOnUnload();"
-  onresize="PreferenceSpyOnResize();"
+  onload="PreferenceSpy_OnLoad();"
+  onblur="PreferenceSpy_OnBlur();"
+  onfocus="PreferenceSpy_OnFocus();"
+  onunload="PreferenceSpy_OnUnload();"
+  onresize="PreferenceSpy_OnResize();"
 >
     <script src="chrome://xtk/content/xtk.js" type="application/x-javascript;version=1.7"/>
     <script src="chrome://komodo/content/library/logging.js" type="application/x-javascript;version=1.7"/>
@@ -53,13 +53,16 @@ http://mozilla.org/MPL/2.0/.
 					<hbox flex="1">
 						<vbox>
 							<!-- search box -->
-							<textbox type="search" id="sources-search"/>
+							<textbox type="search"
+									 id="sources-search"
+									 timeout="1"
+									 oncommand="PreferenceSpy_DoSourcesSearch(this, event)"/>
 							<!-- preference sources -->
 							<tree id="sources"
 								  flex="1"
 								  hidecolumnpicker="true"
 								  seltype="single"
-								  onselect="PreferenceSpyOnSourceSelected(this, event)"
+								  onselect="PreferenceSpy_OnSourceSelected(this, event)"
 								  >
 								<treecols>
 									<treecol id="sources-namecol" label="name" primary="true" flex="1"/>
@@ -91,7 +94,7 @@ http://mozilla.org/MPL/2.0/.
 											<hbox>
 											<button id="result-pref-refresh"
 													  label="Refresh"
-													  oncommand="PreferenceSpy_Refresh(this, event)"
+													  oncommand="PreferenceSpy_RefreshResults(this, event)"
 													  />
 											<spacer flex="1"/>
 											</hbox>
@@ -119,9 +122,9 @@ http://mozilla.org/MPL/2.0/.
 													 placeholder="(any)"
 													 type="search"
 													 timeout="1"
-													 oncommand="PreferenceSpy_DoSearch()"/>
+													 oncommand="PreferenceSpy_DoResultSearch()"/>
 											<menulist id="search-forname-type"
-													  oncommand="PreferenceSpy_DoSearch()">
+													  oncommand="PreferenceSpy_DoResultSearch()">
 											  <menupopup>
 												<menuitem label="plain" value="plain"/>
 												<menuitem label="regex" value="regex"/>
@@ -135,9 +138,9 @@ http://mozilla.org/MPL/2.0/.
 													 placeholder="(any)"
 													 type="search"
 													 timeout="1"
-													 oncommand="PreferenceSpy_DoSearch()"/>
+													 oncommand="PreferenceSpy_DoResultSearch()"/>
 											<menulist id="search-forvalue-type"
-													  oncommand="PreferenceSpy_DoSearch()">
+													  oncommand="PreferenceSpy_DoResultSearch()">
 											  <menupopup>
 												<menuitem label="plain" value="plain"/>
 												<menuitem label="regex" value="regex"/>
@@ -148,7 +151,7 @@ http://mozilla.org/MPL/2.0/.
 											<label value="Type:" control="search-fortype-text"/>
 											<hbox align="center">
 												<menulist id="search-fortype"
-														  oncommand="PreferenceSpy_DoSearch()">
+														  oncommand="PreferenceSpy_DoResultSearch()">
 												  <menupopup>
 													<menuitem label="(any)" value="any"/>
 													<menuitem label="boolean" value="boolean"/>
@@ -160,7 +163,7 @@ http://mozilla.org/MPL/2.0/.
 												</menulist>
 												<label value="State:" control="search-forstate-text"/>
 												<menulist id="search-forstate"
-														  oncommand="PreferenceSpy_DoSearch()">
+														  oncommand="PreferenceSpy_DoResultSearch()">
 												  <menupopup>
 													<menuitem label="(any)" value="any"/>
 													<menuitem label="inherited" value="inherited"/>
@@ -169,7 +172,7 @@ http://mozilla.org/MPL/2.0/.
 												</menulist>
 												<label value="Source:" control="search-forstate-text"/>
 												<menulist id="search-forsource"
-														  oncommand="PreferenceSpy_DoSearch()">
+														  oncommand="PreferenceSpy_DoResultSearch()">
 												  <menupopup>
 													<menuitem label="(any)" value="any"/>
 													<menuitem label="view" value="view"/>
@@ -220,7 +223,7 @@ http://mozilla.org/MPL/2.0/.
 					<!-- monitor tab -->
 				</tabpanel>
 			</tabpanels>
-			<tabs onselect="PreferenceSpyOnTabSelected(this, event);">
+			<tabs onselect="PreferenceSpy_OnTabSelected(this, event);">
 				<tab id="tab_view" label="View"/>
 				<tab id="tab_monitor" label="Monitor"/>
 			</tabs>

@@ -8,14 +8,14 @@ sourceView = null
 resultView = null
 monitorView = null
 
-@PreferenceSpyOnBlur = ->
+@PreferenceSpy_OnBlur = ->
 	#log.warn "PreferenceSpyOnBlur"
 
-@PreferenceSpyOnFocus = ->
+@PreferenceSpy_OnFocus = ->
 	#log.warn "PreferenceSpyOnFocus"
 
-@PreferenceSpyOnLoad = ->
-	log.warn "PreferenceSpyOnLoad"
+@PreferenceSpy_OnLoad = ->
+	log.warn "PreferenceSpy_OnLoad"
 
 	mainWindow = window.arguments[0].window
 	#log.warn "PreferenceSpyOnLoad::arguments contains window? #{sourceWindow}"
@@ -27,26 +27,29 @@ monitorView = null
 	catch e
 		log.exception e
 
-@PreferenceSpyOnSourceSelected = ->
-	log.warn "PreferenceSpyOnSourceSelected"
+@PreferenceSpy_OnSourceSelected = ->
+	log.warn "PreferenceSpy_OnSourceSelected"
 	try
 		sourceView.selectionChanged()
 	catch e
 		log.exception e
 
-@PreferenceSpyOnUnload = ->
-	log.warn "PreferenceSpyOnUnload"
+@PreferenceSpy_OnUnload = ->
+	log.warn "PreferenceSpy_OnUnload"
 	sourceView.dispose() if sourceView
 	resultView.dispose() if resultView
 
-@PreferenceSpyOnResize = ->
+@PreferenceSpy_OnResize = ->
 	#log.warn "PreferenceSpyOnResize"
 
-@PreferenceSpyOnTabSelected = ->
+@PreferenceSpy_OnTabSelected = ->
 	#log.warn "PreferenceSpyOnTabSelected"
 
-@PreferenceSpy_DoSearch = ->
+@PreferenceSpy_DoResultSearch = ->
 	resultView.doSearch()
 
-@PreferenceSpy_Refresh = ->
+@PreferenceSpy_DoSourcesSearch = ->
+	sourceView.doSearch()
+
+@PreferenceSpy_RefreshResults = ->
 	resultView.refresh()

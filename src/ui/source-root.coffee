@@ -5,12 +5,18 @@ log = require('ko/logging').getLogger 'preference-spy'
 class SourceRoot
 	opened: false
 	index: 0
+	loaded: false
+	filterTerm: ''
 	constructor: (@view, @name) ->
 		@children = []
+		@allChildren = [] # Ordered list of all available children
+
 		@.__defineGetter__ 'childCount', =>
 			@children.length
 
 	load: ->
+		return if @loaded
+		@loaded = true
 
 	childIndex: (index) ->
 		index - @index - 1
@@ -20,7 +26,21 @@ class SourceRoot
 		index > @index and @isOpen() and @childIndex(index) < @childCount
 
 	addChild: (child) ->
-		@children.push child
+
+		if @filterTerm.length is 0 or child.name.indexOf(@filterTerm) isnt -1
+			@children.push child
+
+		@allChildren.push child
+
+	filterChildren: ->
+		@children = []
+
+		if @filterTerm.length is 0
+			for child in @allChildren
+				@children.push child
+		else
+			for child in @allChildren
+				@children.push(child) if child.name.indexOf(@filterTerm) isnt -1
 
 	getChild: (index) ->
 		#log.warn "SourceRoot::getChild #{index}"
@@ -58,6 +78,12 @@ class SourceRoot
 		else
 			@getChild(index).tag
 
+	getId: (index) ->
+		if index is @index
+			''
+		else
+			@getChild(index).id
+			
 	isEmpty: ->
 		#log.warn "SourceRoot::isEmpty"
 		@children.length is 0
@@ -83,6 +109,11 @@ class SourceRoot
 
 	update: (fn) ->
 		@view.update fn
+
+	filter: (term) ->
+		@filterTerm = term
+		@load()
+		@filterChildren()
 
 	dispose: ->
 

@@ -63,7 +63,7 @@ class SourceView
 
 		# We're reindexing after removing
 		if removedIndices and @selection.count and @selection.currentIndex in removedIndices
-			@selection.clearSelection()
+			@clearSelection()
 
 		if updateUI
 			@treebox.invalidate()
@@ -188,6 +188,9 @@ class SourceView
 
 		@resultView.doSearch()
 
+	clearSelection: ->
+		@selection.clearSelection()
+
 	getPrefSourceFromSelection: ->
 		return unless @selection.count is 1
 		index = @selection.currentIndex
@@ -204,5 +207,20 @@ class SourceView
 
 	dispose: ->
 		@roots.forEach (root) -> root.dispose()
+
+	doSearch: ->
+		term = document.getElementById('sources-search').value
+		# Pass the search on to the roots
+		# Note that a search may trigger loading pref data
+
+		@update =>
+			root.filter(term) for root in @roots
+			@reindex()
+
+		# There's no good way to track whether the underlying
+		# row was removed. Better to clear the selection than
+		# to let the UI parts get out of sync.
+
+		@clearSelection()
 
 module.exports = SourceView

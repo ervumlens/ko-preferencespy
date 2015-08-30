@@ -23,16 +23,17 @@ class SourceProjectsRoot extends SourceRoot
 		@container = PrefData.createContainer @prefset
 
 	isEmpty: ->
+		return super if @loaded
 		@container.isEmpty()
 
 	load: ->
+		super
 		@load = ->
-
 		@container.visitNames (name) =>
 			return unless @prefset.hasPref name
 			source = PrefSource.create(@prefset.getPref name)
 			source.sourceHint = 'file'
-			child = new SourceRow @, source
+			child = new SourceRow @, name, source
 
 			# Trim the name so that it fits in the tree
 			child.name = @trimChildName child.name

@@ -8,7 +8,7 @@ PrefData = require 'preferencespy/ui/pref-data'
 class SourceRow
 	name: '??'
 	tag: ''
-	constructor: (@root, @source) ->
+	constructor: (@root, @id, @source) ->
 		throw new Error("Cannot create SourceRow without PrefSource object") unless @source
 		@name = @source.displayName
 

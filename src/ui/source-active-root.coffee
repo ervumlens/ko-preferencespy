@@ -16,6 +16,7 @@ PrefSource = require 'preferencespy/ui/pref-source'
 
 class SourceActiveRoot extends SourceRoot
 	opened: true
+	loaded: true
 	topics: ['current_project_changed']
 	events: ['view_opened', 'view_closed']
 
@@ -31,18 +32,18 @@ class SourceActiveRoot extends SourceRoot
 		@registerListeners()
 
 	initGlobal: ->
-		@addChild new SourceRow(@, PrefSource.create prefService.prefs)
+		@addChild new SourceRow(@, 'global:global', PrefSource.create prefService.prefs)
 
 	initCurrentProjects: ->
 		return unless partService.currentProject
-		@addChild new SourceRow(@, PrefSource.create partService.currentProject)
+		@addChild new SourceRow(@, 'project:current-project', PrefSource.create partService.currentProject)
 
 	initCurrentViews: ->
 		countObject = new Object();
 		views = viewService.getAllViews '', countObject
 
 		for view in views
-			@addChild new SourceRow(@, PrefSource.create view)
+			@addChild new SourceRow(@, "view:#{view.uri}", PrefSource.create view)
 
 	resetCurrentProjects: ->
 	resetCurrentViews: ->
