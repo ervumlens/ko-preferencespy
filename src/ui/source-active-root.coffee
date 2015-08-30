@@ -31,18 +31,18 @@ class SourceActiveRoot extends SourceRoot
 		@registerListeners()
 
 	initGlobal: ->
-		@children.push new SourceRow(@, PrefSource.create prefService.prefs)
+		@addChild new SourceRow(@, PrefSource.create prefService.prefs)
 
 	initCurrentProjects: ->
 		return unless partService.currentProject
-		@children.push new SourceRow(@, PrefSource.create partService.currentProject)
+		@addChild new SourceRow(@, PrefSource.create partService.currentProject)
 
 	initCurrentViews: ->
 		countObject = new Object();
 		views = viewService.getAllViews '', countObject
 
 		for view in views
-			@children.push new SourceRow(@, PrefSource.create view)
+			@addChild new SourceRow(@, PrefSource.create view)
 
 	resetCurrentProjects: ->
 	resetCurrentViews: ->

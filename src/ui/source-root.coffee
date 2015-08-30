@@ -17,6 +17,9 @@ class SourceRoot
 		return true if index is @index
 		index > @index and @isOpen() and @childIndex(index) < @childCount
 
+	addChild: (child) ->
+		@children.push child
+		
 	getChild: (index) ->
 		#log.warn "SourceRoot::getChild #{index}"
 		child = @children[@childIndex(index)]

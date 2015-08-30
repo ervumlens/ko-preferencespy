@@ -19,5 +19,21 @@ class SourceProjectsRoot extends SourceRoot
 	constructor: (view) ->
 		super view, 'All Projects'
 
+		@prefset = prefService.getPrefs 'viewStateMRU'
+		@container = PrefData.createContainer @prefset
+
+		@container.visitNames (name) =>
+			return unless @prefset.hasPref name
+			child = new SourceRow(@, PrefSource.create @prefset.getPref name)
+
+			# Trim the name so that it fits in the tree
+
+			trimFrom = child.name.lastIndexOf '/'
+			if trimFrom != -1
+				child.name = child.name[trimFrom + 1 .. -1]
+
+			child.name = child.name.replace '.komodoproject', ''
+
+			@addChild child
 
 module.exports = SourceProjectsRoot
