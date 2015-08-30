@@ -1,9 +1,9 @@
 {Cc, Ci, Cu} = require 'chrome'
+{Services} = Cu.import 'resource://gre/modules/Services.jsm'
 
 PrefData = require 'preferencespy/ui/pref-data'
 
 log = require('ko/logging').getLogger 'preference-spy'
-
 
 observerService = Cc["@mozilla.org/observer-service;1"].getService Ci.nsIObserverService
 prefService = Cc["@activestate.com/koPrefService;1"].getService Ci.koIPrefService
@@ -20,6 +20,8 @@ SourceFilesRoot = require 'preferencespy/ui/source-files-root'
 class SourceView
 	sorted: false
 	selection: null
+	loading: false
+	disposed: false
 
 	constructor: (@window, @resultView) ->
 		#log.warn "SourceView::constructor"
@@ -40,25 +42,77 @@ class SourceView
 		@tree = document.getElementById 'sources'
 		@tree.view = @
 
+		@offlineLoad()
+
+	offlineLoad: ->
+		@loading = true
+
+		enqueue = (step) ->
+			runner = ->
+				try
+					step()
+				catch e
+					log.exception e
+					throw e
+
+			Services.tm.currentThread.dispatch runner, Ci.nsIThread.DISPATCH_NORMAL
+
+		progress = document.getElementById('view-progress')
+		progress.setAttribute 'value', 0
+		progress.removeAttribute 'hidden'
+
+		roots = @roots.map (v) -> v
+		root = roots.shift()
+
+		step = =>
+			return if @disposed
+			if root
+				if not root.hasMoreOfflineWork()
+					root = roots.shift()
+					enqueue step
+				else
+					percent = root.offlineStep()
+					percent = 0 unless percent
+					#log.warn "SourceView::stepProgress: #{percent}"
+					progress.setAttribute 'value', percent
+					enqueue step
+			else
+				# Done.
+				progress.setAttribute 'hidden', 'true'
+				@loading = false
+				@update =>
+					@reindex()
+					@doSearch()
+
+		enqueue step
+
 	getCellText: (index, col) ->
 		#log.warn "SourceView::getCellText #{index} #{col.id}"
-		root = @rootFor index
-		switch col.id
-			when 'sources-namecol' then root.getName(index)
-			when 'sources-tagcol' then root.getTag(index)
-			else '??'
+		try
+			root = @rootFor index
+			switch col.id
+				when 'sources-namecol' then root.getName(index)
+				when 'sources-tagcol' then root.getTag(index)
+				else '??'
+		catch e
+			log.exception e
+			throw e
 
 	getRowCount: ->
-		log.warn "SourceView::getRowCount -> #{@allFilesRow.lastIndex() + 1}"
-		#The number of rows is also the index of the last visible row plus 1.
-		@allFilesRow.lastIndex() + 1
+		#log.warn "SourceView::getRowCount -> #{@allFilesRow.lastIndex() + 1}"
+		try
+			#The number of rows is also the index of the last visible row plus 1.
+			@allFilesRow.lastIndex() + 1
+		catch e
+			log.exception e
+			throw e
 
 	reindex: (removedIndices = null, updateUI = false) ->
 
 		lastIndex = 0
 		for root in @roots
 			root.index = lastIndex
-			log.warn "SourceView::reindex: #{root.name} index is now #{root.index}"
+			#log.warn "SourceView::reindex: #{root.name} index is now #{root.index}"
 			lastIndex = root.lastIndex() + 1
 
 		# We're reindexing after removing
@@ -71,7 +125,6 @@ class SourceView
 	rootFor: (index) ->
 		for root in @roots
 			return root if root.containsIndex index
-
 		throw new Error "No root for index #{index}"
 
 	isRoot: (index) ->
@@ -92,16 +145,28 @@ class SourceView
 
 	isContainer: (index) ->
 		#log.warn "SourceView::isContainer #{index}"
-		@isRoot index
+		try
+			@isRoot index
+		catch e
+			log.exception e
+			throw e
 
 	isContainerOpen: (index) ->
 		#log.warn "SourceView::isContainerOpen #{index}"
-		@rootFor(index).isOpen()
+		try
+			@rootFor(index).isOpen()
+		catch e
+			log.exception e
+			throw e
 
 	isContainerEmpty: (index) ->
 		#log.warn "SourceView::isContainerEmpty #{index}"
-		root = @rootFor index
-		@rootFor(index).isEmpty()
+		try
+			root = @rootFor index
+			@rootFor(index).isEmpty()
+		catch e
+			log.exception e
+			throw e
 
 	isSeparator: (index) ->
 		#log.warn "SourceView::isSeparator #{index}"
@@ -113,13 +178,17 @@ class SourceView
 
 	getLevel: (index) ->
 		#log.warn "SourceView::getLevel #{index}"
-		if @isRoot index
-			0
-		else
-			1
+		try
+			if @isRoot index
+				0
+			else
+				1
+		catch e
+			log.exception e
+			throw e
 
 	hasNextSibling: (index, afterIndex) ->
-		log.warn "SourceView::hasNextSibling #{index}, #{afterIndex}"
+		#log.warn "SourceView::hasNextSibling #{index}, #{afterIndex}"
 		#row = @rowAt index
 		#row.nextSibling?
 		false #??
@@ -129,10 +198,14 @@ class SourceView
 
 	getRowProperties: (index) ->
 		#log.warn "SourceView::getRowProperties #{index}"
-		if @isRoot index
-			"root"
-		else
-			null
+		try
+			if @isRoot index
+				"root"
+			else
+				null
+		catch e
+			log.exception e
+			throw e
 
 	getCellProperties: (index, col) ->
 		false
@@ -145,21 +218,32 @@ class SourceView
 
 	getParentIndex: (index) ->
 		#log.warn "SourceView::getParentIndex #{index}"
-
-		root = @rootFor(index)
-		if root.index is index
-			-1
-		else
-			root.index
+		try
+			root = @rootFor(index)
+			if root.index is index
+				-1
+			else
+				root.index
+		catch e
+			log.exception e
+			throw e
 
 	toggleOpenState: (index) ->
-		log.warn "SourceView::toggleOpenState #{index}"
-		return if @isContainerEmpty index
-		root = @rootFor index
+		#log.warn "SourceView::toggleOpenState #{index}"
 
-		@update =>
-			root.toggleOpen()
-			@reindex()
+		# No toggling until we're done loading
+		return if @loading
+
+		try
+			return if @isContainerEmpty index
+			root = @rootFor index
+
+			@update =>
+				root.toggleOpen()
+				@reindex()
+		catch e
+			log.exception e
+			throw e
 
 	update: (fn) ->
 		if @treebox
@@ -207,8 +291,12 @@ class SourceView
 
 	dispose: ->
 		@roots.forEach (root) -> root.dispose()
+		@disposed = true
 
 	doSearch: ->
+		# No searching while loading!
+		return if @loading
+
 		term = document.getElementById('sources-search').value
 		# Pass the search on to the roots
 		# Note that a search may trigger loading pref data

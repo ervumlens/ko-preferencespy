@@ -72,6 +72,7 @@ class SourceActiveRoot extends SourceRoot
 			@window.removeEventListener event, @eventListener
 
 	dispose: ->
+		super
 		try
 			@unregisterListeners()
 		catch e

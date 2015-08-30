@@ -43,6 +43,9 @@ class PreferenceContainer
 	visitNames: (visitor, sourceHint) ->
 		log.warn "Called 'visitNames' on a mystery container"
 
+	getName: (index) ->
+		log.warn "Called 'getName' on a mystery container"
+
 	addObserver: (observer) ->
 		observerService = @container.prefObserverService
 
@@ -105,6 +108,9 @@ class PreferenceSet extends PreferenceContainer
 		for id in @allIds
 			visitor id, sourceHint, (args...) => @fetchValues args...
 
+	getName: (index) ->
+		@allIds[index]
+
 	isOverwritten: (id) ->
 		@container.hasPrefHere(id)
 
@@ -118,16 +124,31 @@ class OrderedPreference extends PreferenceContainer
 		for id in [0 ... @count]
 			visitor id, sourceHint, (args...) => @fetchValues args...
 
+	getName: (index) ->
+		index
+
 class PreferenceCache extends PreferenceContainer
 	constructor: (@container) ->
 		@count = @container.length
 		@name = '(empty)' if @isEmpty()
 
-	visitNames: (visitor, sourceHint = null) ->
+	loadIds: ->
+		@ids = []
 		e = @container.enumPreferences()
 		while e.hasMoreElements()
-			prefId = e.getNext().id
+			@ids.push e.getNext().id
+
+		@loadIds = ->
+
+	visitNames: (visitor, sourceHint = null) ->
+		@loadIds()
+
+		for prefId in @ids
 			visitor prefId, sourceHint, (id, target) => @fetchValues id, target
+
+	getName: (index) ->
+		@loadIds()
+		@ids[index]
 
 	fetchValues: (id, target) ->
 		target.type = 'object'

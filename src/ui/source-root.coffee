@@ -1,5 +1,4 @@
 {Cc, Ci, Cu} = require 'chrome'
-
 log = require('ko/logging').getLogger 'preference-spy'
 
 class SourceRoot
@@ -7,6 +6,8 @@ class SourceRoot
 	index: 0
 	loaded: false
 	filterTerm: ''
+	disposed: false
+
 	constructor: (@view, @name) ->
 		@children = []
 		@allChildren = [] # Ordered list of all available children
@@ -17,6 +18,12 @@ class SourceRoot
 	load: ->
 		return if @loaded
 		@loaded = true
+
+	offlineStep: ->
+		100
+
+	hasMoreOfflineWork: ->
+		false
 
 	childIndex: (index) ->
 		index - @index - 1
@@ -83,7 +90,7 @@ class SourceRoot
 			''
 		else
 			@getChild(index).id
-			
+
 	isEmpty: ->
 		#log.warn "SourceRoot::isEmpty"
 		@children.length is 0
@@ -116,5 +123,6 @@ class SourceRoot
 		@filterChildren()
 
 	dispose: ->
+		@disposed = true
 
 module.exports = SourceRoot

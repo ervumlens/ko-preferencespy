@@ -15,6 +15,8 @@ SourceRoot = require 'preferencespy/ui/source-root'
 PrefSource = require 'preferencespy/ui/pref-source'
 
 class SourceFilesRoot extends SourceRoot
+	offlineIndex: 0
+
 	constructor: (view) ->
 		super view, 'All Files'
 
@@ -28,6 +30,7 @@ class SourceFilesRoot extends SourceRoot
 	load: ->
 		super
 		@load = ->
+
 		@container.visitNames (name) =>
 			return unless @prefset.hasPref name
 			source = PrefSource.create(@prefset.getPref name)
@@ -37,5 +40,31 @@ class SourceFilesRoot extends SourceRoot
 			child.name = @trimChildName child.name
 			@addChild child
 
+	hasMoreOfflineWork: ->
+		not @disposed and
+		not @loaded and
+		not @container.isEmpty() and
+		@offlineIndex < @container.count
+
+	offlineStep: ->
+		return 100 unless @hasMoreOfflineWork()
+
+		# Prevent a full load from occurring
+		@load = ->
+
+		step = 100 / @container.count
+
+		name = @container.getName @offlineIndex
+		++@offlineIndex
+
+		if @prefset.hasPref name
+			source = PrefSource.create(@prefset.getPref name)
+			source.sourceHint = 'file'
+			child = new SourceRow @, name, source
+			# Trim the name so that it fits in the tree
+			child.name = @trimChildName child.name
+			@addChild child
+
+		step * @offlineIndex
 
 module.exports = SourceFilesRoot
