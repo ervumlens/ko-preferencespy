@@ -181,7 +181,8 @@ http://mozilla.org/MPL/2.0/.
 											</hbox>
 										</row>
 										<row align="center">
-											<spacer/><description id="search-message" flex="1"/>
+											<!-- set a blank value here to ensure the message doesn't pop into view later -->
+											<spacer/><description id="search-message" flex="1" value=" "/>
 										</row>
 									</rows>
 								</grid>
