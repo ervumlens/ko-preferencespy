@@ -22,6 +22,7 @@ class SourceView
 	selection: null
 	loading: false
 	disposed: false
+	filterTerm: ''
 
 	constructor: (@window, @resultView) ->
 		#log.warn "SourceView::constructor"
@@ -298,6 +299,13 @@ class SourceView
 		return if @loading
 
 		term = document.getElementById('sources-search').value
+
+		if term is @filterTerm
+			# Nothing to do here.
+			return
+
+		@filterTerm = term
+
 		# Pass the search on to the roots
 		# Note that a search may trigger loading pref data
 
