@@ -72,6 +72,7 @@ http://mozilla.org/MPL/2.0/.
 								<treechildren>
 								</treechildren>
 							</tree>
+							<progressmeter id="source-progress" mode="determined" value="50" hidden="true"/>
 						</vbox>
 						<splitter orient="horizontal"/>
 						<vbox flex="1">
@@ -218,7 +219,6 @@ http://mozilla.org/MPL/2.0/.
 								</tree>
 						</vbox>
 					</hbox>
-					<progressmeter id="view-progress" mode="determined" value="50" hidden="true"/>
 					</vbox>
 				</tabpanel>
 

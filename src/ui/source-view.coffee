@@ -58,7 +58,7 @@ class SourceView
 
 			Services.tm.currentThread.dispatch runner, Ci.nsIThread.DISPATCH_NORMAL
 
-		progress = document.getElementById('view-progress')
+		progress = document.getElementById('source-progress')
 		progress.setAttribute 'value', 0
 		progress.removeAttribute 'hidden'
 
