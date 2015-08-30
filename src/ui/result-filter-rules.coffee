@@ -72,7 +72,7 @@ class FilterRules
 		@rules.push @createValueRule()
 		@rules.push @createTypeRule()
 		@rules.push @createStateRule()
-		@rules.push @createSourceRule()
+		#@rules.push @createSourceRule()
 
 	createNameRule: ->
 		text = document.getElementById('search-forname-text').value

@@ -172,6 +172,7 @@ http://mozilla.org/MPL/2.0/.
 													<menuitem label="overwritten" value="overwritten"/>
 												  </menupopup>
 												</menulist>
+												<!--
 												<label value="Source:" control="search-forstate-text"/>
 												<menulist id="search-forsource"
 														  oncommand="PreferenceSpy_DoResultSearch()">
@@ -181,6 +182,7 @@ http://mozilla.org/MPL/2.0/.
 													<menuitem label="file" value="file"/>
 												  </menupopup>
 												</menulist>
+												-->
 											</hbox>
 										</row>
 										<row align="center">
@@ -197,6 +199,7 @@ http://mozilla.org/MPL/2.0/.
 										<treecol id="result-namecol"
 												 label="Name"
 												 primary="true"
+												 sortDirection="ascending"
 												 flex="1"/>
 										<splitter class="tree-splitter"/>
 										<treecol id="result-valuecol"
@@ -207,12 +210,13 @@ http://mozilla.org/MPL/2.0/.
 												 label="Type" />
 										<splitter class="tree-splitter"/>
 										<treecol id="result-overwrittencol"
-												 label="Overwritten"
-												 width="1em"/>
+												 label="Overwritten"/>
+										<!--
 										<splitter class="tree-splitter"/>
 										<treecol id="result-sourcecol"
 												 sortDirection="ascending"
 												 label="Source"/>
+										-->
 									</treecols>
 									<treechildren id="result-children">
 									</treechildren>

@@ -55,7 +55,7 @@ sourceSorter = new Sorter COLID_SOURCE, (a, b) ->
 #A ResultView implements nsITreeView
 class ResultView
 	sorted: false
-	sorter: sourceSorter
+	sorter: nameSorter
 
 	constructor: ->
 		#Root is a virtual row under which all top-level rows belong.
