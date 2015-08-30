@@ -48,5 +48,5 @@ monitorView = null
 @PreferenceSpy_DoSearch = ->
 	resultView.doSearch()
 
-@PreferenceSpy_ToggleAutoRefresh = ->
-	resultView.toggleAutoRefresh()
+@PreferenceSpy_Refresh = ->
+	resultView.refresh()

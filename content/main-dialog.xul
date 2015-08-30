@@ -89,11 +89,9 @@ http://mozilla.org/MPL/2.0/.
 										<row align="center">
 											<spacer/>
 											<hbox>
-											<checkbox id="result-pref-autorefresh"
-													  type="checkbox"
-													  checked="true"
-													  label="Auto Refresh"
-													  oncommand="PreferenceSpy_ToggleAutoRefresh(this, event)"
+											<button id="result-pref-refresh"
+													  label="Refresh"
+													  oncommand="PreferenceSpy_Refresh(this, event)"
 													  />
 											<spacer flex="1"/>
 											</hbox>

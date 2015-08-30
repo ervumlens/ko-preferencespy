@@ -10,7 +10,10 @@ qiFactory = (obj, ctors...) ->
 		try
 			return new ctor(obj.QueryInterface iface)
 		catch e
-			log.warn e
+			# Exceptions are expected. Don't log them unless
+			# you (as in, "me") are sure there's a problem here.
+
+			#log.warn e
 	null
 
 class PrefSource
@@ -19,12 +22,9 @@ class PrefSource
 	sourceHint: 'view'
 
 	@create: (source) ->
-		# Possible arg types: koIProject, koIView, koIPreferenceContainer, {uri, project/file}
+		# Possible arg types: koIProject, koIView, koIPreferenceContainer
 		result = if source.QueryInterface
 				qiFactory source, ViewSource, ProjectSource, ContainerSource
-		else if source.uri
-			OfflineProjectSource(source) if source.project
-			OfflineFileSource(source) if source.file
 
 		if not result
 			throw new Error("Cannot create PrefSource from #{source}")
@@ -34,12 +34,6 @@ class PrefSource
 	visitPrefNames: (visitor) ->
 		throw new Error("No container available for #{@id}") unless @container
 		@container.visitNames visitor, @sourceHint
-
-	addObserver: (observer) ->
-		@container.addObserver observer
-
-	removeObserver: (observer) ->
-		@container.removeObserver observer
 
 
 class ProjectSource extends PrefSource
@@ -64,16 +58,6 @@ class ProjectSource extends PrefSource
 		if @offlineContainer
 			@offlineContainer.visitNames visitor, 'file'
 
-	addObserver: (observer) ->
-		@container.addObserver observer
-		if @offlineContainer
-			@offlineContainer.addObserver observer
-
-	removeObserver: (observer) ->
-		@container.removeObserver observer
-		if @offlineContainer
-			@offlineContainer.removeObserver observer
-
 class ViewSource extends PrefSource
 	@interface: Ci.koIView
 
@@ -88,23 +72,19 @@ class ViewSource extends PrefSource
 		# Projects have two sets of prefs: one for the runtime data and
 		# another for offline.
 		@container.visitNames visitor, 'view'
-		cache = prefService.getPrefs 'docStateMRU'
-		if cache.hasPref @uri
-			#log.warn "Found cache prefs for #{@uri}"
-			offlineContainer = PrefData.createContainer(cache.getPref @uri)
-			offlineContainer.visitNames visitor, 'file'
-		else
-			#log.warn "No cache prefs for #{@uri}"
 
-	addObserver: (observer) ->
-		super
-		if @offlineContainer
-			@offlineContainer.addObserver observer
+		# Apparently the `docStateMRU` preferences map to
+		# the view preferences whenever there is a view using
+		# that particular URI. Just skip this part since there's
+		# no point in clogging up the UI with duplicates.
 
-	removeObserver: (observer) ->
-		super
-		if @offlineContainer
-			@offlineContainer.removeObserver observer
+		#cache = prefService.getPrefs 'docStateMRU'
+		#if cache.hasPref @uri
+		#	#log.warn "Found cache prefs for #{@uri}"
+		#	offlineContainer = PrefData.createContainer(cache.getPref @uri)
+		#	offlineContainer.visitNames visitor, 'file'
+		#else
+		#	#log.warn "No cache prefs for #{@uri}"
 
 class ContainerSource extends PrefSource
 	@interface: Ci.koIPreferenceContainer
@@ -113,5 +93,6 @@ class ContainerSource extends PrefSource
 		@displayName = @prefset.id
 		@container = PrefData.getContainer @prefset
 		@id = @container.id()
+
 
 module.exports = PrefSource
