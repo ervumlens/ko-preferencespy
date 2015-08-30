@@ -19,7 +19,7 @@ class SourceRoot
 
 	addChild: (child) ->
 		@children.push child
-		
+
 	getChild: (index) ->
 		#log.warn "SourceRoot::getChild #{index}"
 		child = @children[@childIndex(index)]
@@ -31,6 +31,16 @@ class SourceRoot
 		#roots have no prefs themselves
 		return null if index is @index
 		@getChild(index).source
+
+	trimChildName: (name) ->
+		return name if name.indexOf('http') is 0
+
+		trimFrom = name.lastIndexOf '/'
+		if trimFrom in [-1, name.length - 1]
+			# Weird name, just ignore it
+			name
+		else
+			name = name[trimFrom + 1 .. -1]
 
 	getName: (index) ->
 		#log.warn "SourceRoot::getName #{index}"

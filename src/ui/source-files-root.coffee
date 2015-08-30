@@ -28,11 +28,7 @@ class SourceFilesRoot extends SourceRoot
 			child = new SourceRow @, source
 
 			# Trim the name so that it fits in the tree
-
-			trimFrom = child.name.lastIndexOf '/'
-			if trimFrom != -1
-				child.name = child.name[trimFrom + 1 .. -1]
-
+			child.name = @trimChildName child.name
 			@addChild child
 
 module.exports = SourceFilesRoot
