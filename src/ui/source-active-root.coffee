@@ -93,41 +93,56 @@ class SourceActiveRoot extends SourceRoot
 		# Check if the key is already in use by a row.
 		# If it is, re-attach. If not, create a new row.
 
-		index = @findChildIndexByKey(@createKey 'view', view)
-		if index isnt -1
-			child = @getChild index
+		key = @createKey 'view', view
+		found = @findChild key, (child, index) =>
 			child.attach view
-			# TODO do this more gracefully
-			@view.invalidateRow index
-		else
+			@view.invalidateRow @index + index + 1
+
+		if not found
 			# Add a new row
-			0
+			child = @createViewRow view
+			child.markAsAdded()
+			@addChild child
+			@view.reindex()
+			@view.rowCountChanged @index + @getChildCount() - 1, 1
+
+	findChild: (key, visitor) ->
+		found = false
+		for child, index in @children
+			if child.id is key
+				found = true
+				doContinue = visitor child, index
+				# Require an explicit true here
+				break unless doContinue is true
+		found
+
+	removeViewWithDoc: (view) ->
+		key = @createKey('view', view)
+		log.warn "SourceActiveRoot::removeViewWithDoc: Removing #{key}"
+		@findChild key, (child, index) =>
+			child.detach()
+			@view.invalidateRow @index + index + 1
+
+	removeViewWithoutDoc: (view) ->
+		# The closed view is essentially worthless because
+		# its document is inaccessible. So to handle a remove, we
+		# have to compare what we have with what's still open... Yuck!
+
+		openKeys = @createKeysForOpenViews()
+		rowKeys = @getKeysForOpenViewRows()
+		removedKeys = rowKeys.filter (key) -> openKeys.indexOf(key) is -1
+
+		for key in removedKeys
+			@findChild key, (child, index) =>
+				log.warn "SourceActiveRoot::removeViewWithoutDoc: Removing child @ #{index} : #{child.id}"
+				child.detach()
+				@view.invalidateRow @index + index + 1
 
 	removeView: (view) ->
 		if view.koDoc
-			key = @createKey('view', view)
-			log.warn "SourceActiveRoot::removeView: Removing #{key}"
-			child = @getChild @findChildIndexByKey key
-			child.detach()
-			# TODO do this more gracefully
-			@view.invalidateRow index
-
+			@removeViewWithDoc view
 		else
-			# The closed view is essentially worthless because
-			# its document is inaccessible. So to handle a remove, we
-			# have to compare what we have with what's still open... Yuck!
-
-			openKeys = @createKeysForOpenViews()
-			rowKeys = @getKeysForViews()
-			removedKeys = rowKeys.filter (key) -> openKeys.indexOf(key) is -1
-
-			for key in removedKeys
-				index = @findChildIndexByKey key
-				child = @getChild index
-				child.detach()
-				# TODO do this more gracefully
-				@view.invalidateRow index
-
+			@removeViewWithoutDoc view
 
 	createKeysForOpenViews: ->
 		countObject = new Object();
@@ -135,12 +150,12 @@ class SourceActiveRoot extends SourceRoot
 
 		@createKey('view', view) for view in views when view.koDoc?
 
-	getKeysForViews: ->
+	getKeysForOpenViewRows: ->
 		keys = []
 		for child in @children
 			id = child.id
-			continue unless id and id.indexOf('view:') is 0
-			keys.push id
+			if child.tag isnt '-' and id and id.indexOf('view:') is 0
+				keys.push id
 		keys
 
 	registerListeners: ->
