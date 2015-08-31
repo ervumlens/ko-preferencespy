@@ -28,6 +28,9 @@ class SourceRoot
 	childIndex: (index) ->
 		index - @index - 1
 
+	getChildCount: ->
+		@children.length
+
 	containsIndex: (index) ->
 		return true if index is @index
 		index > @index and @isOpen() and @childIndex(index) < @childCount

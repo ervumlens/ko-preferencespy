@@ -49,20 +49,13 @@ class SourceView
 		@loading = true
 
 		enqueue = (step) ->
-			runner = ->
-				try
-					step()
-				catch e
-					log.exception e
-					throw e
-
-			Services.tm.currentThread.dispatch runner, Ci.nsIThread.DISPATCH_NORMAL
+			Services.tm.currentThread.dispatch step, Ci.nsIThread.DISPATCH_NORMAL
 
 		progress = document.getElementById('source-progress')
 		progress.setAttribute 'value', 0
 		progress.removeAttribute 'hidden'
 
-		roots = @roots.map (v) -> v
+		roots = @roots.concat()
 		root = roots.shift()
 
 		step = =>
@@ -243,13 +236,51 @@ class SourceView
 		try
 			return if @isContainerEmpty index
 			root = @rootFor index
+			if root.index isnt index
+				throw new Error "Can only toggle root rows. Unexpected index #{index}"
+
+			# Ensure our selection get sync'd up after opening/closing
+			selectionIndex = @calcSelectionAfterToggleOpen root
 
 			@update =>
 				root.toggleOpen()
 				@reindex()
+				if selectionIndex < 0
+					@clearSelection()
+				else
+					@setSelection selectionIndex
 		catch e
 			log.exception e
 			throw e
+
+	calcSelectionAfterToggleOpen: (root) ->
+			return -1 unless @hasSelection()
+
+			selectionIndex = @selection.currentIndex
+
+			#log.warn "SourceView::calcSelectionAfterToggleOpen: selection = #{selectionIndex}"
+
+			closing = root.isOpen()
+
+			# Toggling the selection itself
+			return selectionIndex if root.index is selectionIndex
+
+			if closing and root.containsIndex(selectionIndex)
+				# Our selection will be hidden. Bye, selection!
+				#log.warn "SourceView::calcSelectionAfterToggleOpen: losing selection"
+				-1
+			else if root.index < selectionIndex
+				# The selection will be shifted up or down. Determine the offset.
+				if closing
+					#log.warn "SourceView::calcSelectionAfterToggleOpen: moving selection down"
+					selectionIndex - root.getChildCount()
+				else
+					#log.warn "SourceView::calcSelectionAfterToggleOpen: moving selection up"
+					selectionIndex + root.getChildCount()
+			else
+				# No change.
+				#log.warn "SourceView::calcSelectionAfterToggleOpen: no change"
+				selectionIndex
 
 	update: (fn) ->
 		if @treebox
@@ -281,10 +312,20 @@ class SourceView
 	clearSelection: ->
 		@selection.clearSelection()
 
+	setSelection: (index) ->
+		@selection.select index
+
 	getPrefSourceFromSelection: ->
-		return unless @selection.count is 1
-		index = @selection.currentIndex
+		return unless @hasSelection()
+		index = @getSelectionIndex()
 		@rootFor(index).getPrefSource index
+
+	hasSelection: ->
+		@selection.count > 0
+
+	getSelectionIndex: ->
+		return -1 unless @hasSelection()
+		@selection.currentIndex
 
 	performAction: (action) ->
 		log.warn "SourceView::performAction #{action}"
