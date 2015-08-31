@@ -29,5 +29,6 @@ class SourceRow
 	attach: (obj) ->
 		@tag = ''
 		@source = @source.attach obj
+		@name = @source.displayName
 
 module.exports = SourceRow
