@@ -36,10 +36,10 @@ class PrefSource
 		@container.visitNames visitor, @sourceHint
 
 	detach: ->
-		throw new Error "Cannot call detach on preference source #{@id}"
+		throw new Error "Cannot call detach on preference source (#{@.__proto__.constructor.name}) #{@id}"
 
 	attach: ->
-		throw new Error "Cannot call attach on preference source #{@id}"
+		throw new Error "Cannot call attach on preference source (#{@.__proto__.constructor.name}) #{@id}"
 
 class ProjectSource extends PrefSource
 	@interface: Ci.koIProject
