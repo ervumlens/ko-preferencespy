@@ -5,18 +5,19 @@
 	overflow: hidden;
 }
 
-#sources treechildren::-moz-tree-row
-{
-	height: 26px;
-}
-
 #sources treechildren::-moz-tree-cell-text
 {
+	height: 26px;
 	font-weight: normal;
 }
 
 #sources treechildren::-moz-tree-cell-text(root)
 {
 	font-weight: bold;
-	padding-left: 4px;
+/*	padding-left: 4px; */
+}
+
+#sources treechildren::-moz-tree-cell-text(removed)
+{
+	font-weight: lighter;
 }
