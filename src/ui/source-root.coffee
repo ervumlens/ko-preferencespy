@@ -42,6 +42,9 @@ class SourceRoot
 
 		@allChildren.push child
 
+	removeChildByIndex: (index) ->
+		@children.splice index, 1
+
 	filterChildren: ->
 		@children = []
 
@@ -58,6 +61,20 @@ class SourceRoot
 		if not child
 			throw new Error "No child at index #{index} in root #{@name}(@index=#{@index})"
 		child
+
+	findChildIndexByKey: (key) ->
+		i = @index + 1
+		for child in @children
+			return i if child.id is key
+			++i
+
+		-1
+
+	getVisualProperties: (index) ->
+		if index is @index
+			'root'
+		else
+			@getChild(index).getVisualProperties()
 
 	getPrefSource: (index) ->
 		#roots have no prefs themselves
@@ -115,7 +132,7 @@ class SourceRoot
 		@opened = not @opened
 
 		# Return the number of newly visible/removed children.
-		
+
 		if opening
 			+@getChildCount()
 		else

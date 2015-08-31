@@ -8,8 +8,26 @@ PrefData = require 'preferencespy/ui/pref-data'
 class SourceRow
 	name: '??'
 	tag: ''
+
 	constructor: (@root, @id, @source) ->
 		throw new Error("Cannot create SourceRow without PrefSource object") unless @source
 		@name = @source.displayName
+
+	getVisualProperties: ->
+		switch @tag
+			when '-' then 'removed'
+			when '+' then 'added'
+			else ''
+
+	markAsAdded: ->
+		@tag = '+'
+
+	detach: ->
+		@tag = '-'
+		@source = @source.detach()
+
+	attach: (obj) ->
+		@tag = ''
+		@source = @source.attach obj
 
 module.exports = SourceRow

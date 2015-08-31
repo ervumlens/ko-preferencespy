@@ -35,6 +35,11 @@ class PrefSource
 		throw new Error("No container available for #{@id}") unless @container
 		@container.visitNames visitor, @sourceHint
 
+	detach: ->
+		throw new Error "Cannot call detach on preference source #{@id}"
+
+	attach: ->
+		throw new Error "Cannot call attach on preference source #{@id}"
 
 class ProjectSource extends PrefSource
 	@interface: Ci.koIProject
@@ -58,6 +63,17 @@ class ProjectSource extends PrefSource
 		if @offlineContainer
 			@offlineContainer.visitNames visitor, 'file'
 
+	detach: ->
+		url = @url
+		new OfflineSource @, ->
+			return unless url
+			cache = prefService.getPrefs 'viewStateMRU'
+			if cache.hasPref url
+				#log.warn "Found cache prefs for #{@url}"
+				PrefData.createContainer(cache.getPref url)
+			else
+				null
+
 class ViewSource extends PrefSource
 	@interface: Ci.koIView
 
@@ -78,13 +94,15 @@ class ViewSource extends PrefSource
 		# that particular URI. Just skip this part since there's
 		# no point in clogging up the UI with duplicates.
 
-		#cache = prefService.getPrefs 'docStateMRU'
-		#if cache.hasPref @uri
-		#	#log.warn "Found cache prefs for #{@uri}"
-		#	offlineContainer = PrefData.createContainer(cache.getPref @uri)
-		#	offlineContainer.visitNames visitor, 'file'
-		#else
-		#	#log.warn "No cache prefs for #{@uri}"
+	detach: ->
+		uri = @uri
+		new OfflineSource @, ->
+			return unless uri
+			cache = prefService.getPrefs 'docStateMRU'
+			if cache.hasPref uri
+				PrefData.createContainer(cache.getPref uri)
+			else
+				null
 
 class ContainerSource extends PrefSource
 	@interface: Ci.koIPreferenceContainer
@@ -94,5 +112,24 @@ class ContainerSource extends PrefSource
 		@container = PrefData.getContainer @prefset
 		@id = @container.id()
 
+class OfflineSource extends PrefSource
+	sourceHint: 'file'
+
+	constructor: (source, @loader) ->
+		@id = source.id
+		@displayName = source.displayName
+
+	load: ->
+		return unless @loader
+		@container = @loader()
+		@loader = null
+
+	visitPrefNames: (visitor) ->
+		@load()
+		return unless @container
+		super
+
+	attach: (obj) ->
+		PrefSource.create obj
 
 module.exports = PrefSource

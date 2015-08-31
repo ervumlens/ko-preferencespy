@@ -191,16 +191,13 @@ class SourceView
 	getRowProperties: (index) ->
 		#log.warn "SourceView::getRowProperties #{index}"
 		try
-			if @isRoot index
-				"root"
-			else
-				null
+			@rootFor(index).getVisualProperties index
 		catch e
 			log.exception e
 			throw e
 
 	getCellProperties: (index, col) ->
-		false
+		@getRowProperties index
 
 	getColumnProperties: (colId, col) ->
 		false
@@ -235,11 +232,14 @@ class SourceView
 			delta = root.toggleOpen()
 			@reindex()
 			@treebox.rowCountChanged index + 1, delta
-			@treebox.invalidateRow index
+			@invalidateRow index
 
 		catch e
 			log.exception e
 			throw e
+
+	invalidateRow: (index) ->
+		@treebox.invalidateRow index
 
 	update: (fn) ->
 		if @treebox
