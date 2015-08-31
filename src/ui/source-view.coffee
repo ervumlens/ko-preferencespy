@@ -101,20 +101,13 @@ class SourceView
 			log.exception e
 			throw e
 
-	reindex: (removedIndices = null, updateUI = false) ->
+	reindex: ->
 
 		lastIndex = 0
 		for root in @roots
 			root.index = lastIndex
 			#log.warn "SourceView::reindex: #{root.name} index is now #{root.index}"
 			lastIndex = root.lastIndex() + 1
-
-		# We're reindexing after removing
-		if removedIndices and @selection.count and @selection.currentIndex in removedIndices
-			@clearSelection()
-
-		if updateUI
-			@treebox.invalidate()
 
 	rootFor: (index) ->
 		for root in @roots
@@ -187,7 +180,7 @@ class SourceView
 			throw e
 
 	hasNextSibling: (index, afterIndex) ->
-		#log.warn "SourceView::hasNextSibling #{index}, #{afterIndex}"
+		log.warn "SourceView::hasNextSibling #{index}, #{afterIndex}"
 		#row = @rowAt index
 		#row.nextSibling?
 		false #??
@@ -216,9 +209,9 @@ class SourceView
 		#log.warn "SourceView::cycleHeader #{col.id}"
 
 	getParentIndex: (index) ->
-		#log.warn "SourceView::getParentIndex #{index}"
 		try
 			root = @rootFor(index)
+			#log.warn "SourceView::getParentIndex #{index} -> #{root.index}"
 			if root.index is index
 				-1
 			else
@@ -239,48 +232,14 @@ class SourceView
 			if root.index isnt index
 				throw new Error "Can only toggle root rows. Unexpected index #{index}"
 
-			# Ensure our selection get sync'd up after opening/closing
-			selectionIndex = @calcSelectionAfterToggleOpen root
+			delta = root.toggleOpen()
+			@reindex()
+			@treebox.rowCountChanged index + 1, delta
+			@treebox.invalidateRow index
 
-			@update =>
-				root.toggleOpen()
-				@reindex()
-				if selectionIndex < 0
-					@clearSelection()
-				else
-					@setSelection selectionIndex
 		catch e
 			log.exception e
 			throw e
-
-	calcSelectionAfterToggleOpen: (root) ->
-			return -1 unless @hasSelection()
-
-			selectionIndex = @selection.currentIndex
-
-			#log.warn "SourceView::calcSelectionAfterToggleOpen: selection = #{selectionIndex}"
-
-			closing = root.isOpen()
-
-			# Toggling the selection itself
-			return selectionIndex if root.index is selectionIndex
-
-			if closing and root.containsIndex(selectionIndex)
-				# Our selection will be hidden. Bye, selection!
-				#log.warn "SourceView::calcSelectionAfterToggleOpen: losing selection"
-				-1
-			else if root.index < selectionIndex
-				# The selection will be shifted up or down. Determine the offset.
-				if closing
-					#log.warn "SourceView::calcSelectionAfterToggleOpen: moving selection down"
-					selectionIndex - root.getChildCount()
-				else
-					#log.warn "SourceView::calcSelectionAfterToggleOpen: moving selection up"
-					selectionIndex + root.getChildCount()
-			else
-				# No change.
-				#log.warn "SourceView::calcSelectionAfterToggleOpen: no change"
-				selectionIndex
 
 	update: (fn) ->
 		if @treebox

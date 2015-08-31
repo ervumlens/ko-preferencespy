@@ -111,7 +111,15 @@ class SourceRoot
 	toggleOpen: ->
 		#log.warn "SourceRoot::toggleOpen"
 		@load()
+		opening = not @opened
 		@opened = not @opened
+
+		# Return the number of newly visible/removed children.
+		
+		if opening
+			+@getChildCount()
+		else
+			-@getChildCount()
 
 	parentIndex: ->
 		log.warn "SourceRoot::parentIndex"
