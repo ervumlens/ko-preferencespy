@@ -231,12 +231,16 @@ class SourceView
 
 			delta = root.toggleOpen()
 			@reindex()
-			@treebox.rowCountChanged index + 1, delta
+			@rowCountChanged index + 1, delta
 			@invalidateRow index
 
 		catch e
 			log.exception e
 			throw e
+
+	rowCountChanged: (start, difference) ->
+		log.warn "SourceView::rowCountChanged: #{start}, #{difference}"
+		@treebox.rowCountChanged start, difference
 
 	invalidateRow: (index) ->
 		@treebox.invalidateRow index
