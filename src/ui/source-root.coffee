@@ -62,14 +62,6 @@ class SourceRoot
 			throw new Error "No child at index #{index} in root #{@name}(@index=#{@index})"
 		child
 
-	findChildIndexByKey: (key) ->
-		i = @index + 1
-		for child in @children
-			return i if child.id is key
-			++i
-
-		-1
-
 	getVisualProperties: (index) ->
 		if index is @index
 			'root'
