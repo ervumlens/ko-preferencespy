@@ -43,7 +43,7 @@ class SourceRoot
 		accept = @filterTerm.length is 0 or
 			child.name.indexOf(@filterTerm) isnt -1
 
-		if index
+		if index?
 			@allChildren.splice index, 0, child
 			@children.splice(index, 0, child) if accept
 		else
