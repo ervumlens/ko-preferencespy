@@ -9,6 +9,8 @@ class SourceRow
 	name: '??'
 	tag: ''
 	filterable: true
+	attached: true
+	index: -1
 
 	constructor: (@root, @id, @source) ->
 		throw new Error("Cannot create SourceRow without PrefSource object") unless @source
@@ -24,10 +26,14 @@ class SourceRow
 		@tag = '+'
 
 	detach: ->
+		throw new Error("Cannot detach a detached row") unless @attached
+		@attached = false
 		@tag = '-'
 		@source = @source.detach()
 
 	attach: (obj) ->
+		throw new Error("Cannot attach an attached row") if @attached
+		@attached = true
 		@tag = ''
 		@source = @source.attach obj
 		@name = @source.displayName

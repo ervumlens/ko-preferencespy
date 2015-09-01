@@ -17,13 +17,13 @@ PrefSource = require 'preferencespy/ui/pref-source'
 class SourceActiveRoot extends SourceRoot
 	opened: true
 	loaded: true
+	initializing: true
 	topics: ['current_project_changed']
 	events: ['view_opened', 'view_closed']
 
 	constructor: (view, @window) ->
 		super view, 'Active'
 
-		@initGlobal()
 		@initCurrentProjects()
 		@initCurrentViews()
 
@@ -31,10 +31,7 @@ class SourceActiveRoot extends SourceRoot
 
 		@registerListeners()
 
-	initGlobal: ->
-		global = new SourceRow(@, @createKey('global'), PrefSource.create prefService.prefs)
-		global.filterable = false
-		@addChild global
+		@initializing = false
 
 	initCurrentProjects: ->
 		return unless partService.currentProject
@@ -49,7 +46,6 @@ class SourceActiveRoot extends SourceRoot
 
 	createKey: (type, obj) ->
 		switch type
-			when 'global' then 'global:global'
 			when 'project' then "project:#{obj.url}"
 			when 'view'
 				if obj.koDoc
@@ -73,40 +69,54 @@ class SourceActiveRoot extends SourceRoot
 		switch topic
 			when 'current_project_changed' then @resetCurrentProjects()
 
-	invalidateChild: (index) ->
-		@view.invalidateRow @index + index + 1
+	addChild: (child, index) ->
+		super
+		if not @initializing
+			@view.reindex()
+			if @isOpen() and child.index isnt -1
+				log.warn "SourceActiveRoot::rowCountChanged: #{child.index}"
+				@view.rowCountChanged child.index, 1
+
+	invalidateChild: (child) ->
+		if child.index isnt -1
+			@view.invalidateRow child.index
+
+	detachChild: (child) ->
+		if child.attached
+			child.detach()
+			@invalidateChild child
+
+	attachChild: (child, obj) ->
+		child.attach obj
+		@invalidateChild child
 
 	resetCurrentProjects: ->
 		# The best we can do here is operate on `currentProject`
 		# even though multiple projects may be open. We end up visually "closing"
 		# projects because of this. :frown:
 
+		# Detach all projects for starters. This prevents
+		# goofy scenarios like "we just set the current project to itself".
+		@visitAllProjects (project) =>
+			@detachChild project
+
 		if partService.currentProject
 			# Attach the project if it already has as row.
-			# Otherwise, give it a row after global.
+			# Otherwise, insert a new top row.
 
 			newProject = partService.currentProject
 			matchedIndex = -1
 			key = @createKey 'project', newProject
 
-			found = @findChild key, (child, index) =>
+			found = @findChild key, (child) =>
 				# The project already has a row. Reattach it.
-				child.attach newProject
-				@invalidateChild index
+				@attachChild child, newProject
 
 			if not found
-				# Not listed, so add it after global.
-				# Global is never filtered out, so this works fine.
+				# Not listed, so add it first.
 				child = @createProjectRow(newProject)
 				child.markAsAdded()
-				@addChild child, 1
-				@view.reindex()
-				@view.rowCountChanged @index + 2, 1
-		else
-			# Detach all projects
-			@findAllProjects (project, index) =>
-				project.detach()
-				@invalidateChild index
+				@addChild child, 0
 
 
 	handleWindowEvent: (event) ->
@@ -123,42 +133,38 @@ class SourceActiveRoot extends SourceRoot
 		# If it is, re-attach. If not, create a new row.
 
 		key = @createKey 'view', view
-		found = @findChild key, (child, index) =>
-			child.attach view
-			@invalidateChild index
+		found = @findChild key, (child) =>
+			@attachChild child, view
 
 		if not found
 			# Add a new row
 			child = @createViewRow view
 			child.markAsAdded()
 			@addChild child
-			@view.reindex()
-			@view.rowCountChanged @index + @getChildCount() - 1, 1
 
 	findChild: (key, visitor) ->
 		found = false
-		for child, index in @children
+		for child in @allChildren
 			if child.id is key
 				found = true
-				visitor child, index
+				visitor child
 				break
 		found
 
-	findAllProjects: (visitor) ->
-		found = false
-		for child, index in @children
+	visitAllProjects: (visitor) ->
+		count = 0
+		for child in @allChildren
 			id = child.id
 			if id and id.indexOf('project:') is 0
 				found = true
-				visitor child, index
-		found
-
+				visitor child
+				++count
+		count
 
 	removeViewWithDoc: (view) ->
 		key = @createKey('view', view)
-		@findChild key, (child, index) =>
-			child.detach()
-			@invalidateChild index
+		@findChild key, (child) =>
+			@detachChild child
 
 	removeViewWithoutDoc: (view) ->
 		# The closed view is essentially worthless because
@@ -170,9 +176,8 @@ class SourceActiveRoot extends SourceRoot
 		removedKeys = rowKeys.filter (key) -> openKeys.indexOf(key) is -1
 
 		for key in removedKeys
-			@findChild key, (child, index) =>
-				child.detach()
-				@invalidateChild index
+			@findChild key, (child) =>
+				@detachChild child
 
 	removeView: (view) ->
 		if view.koDoc
@@ -188,7 +193,7 @@ class SourceActiveRoot extends SourceRoot
 
 	getKeysForOpenViewRows: ->
 		keys = []
-		for child in @children
+		for child in @allChildren
 			id = child.id
 			if child.tag isnt '-' and id and id.indexOf('view:') is 0
 				keys.push id

@@ -3,7 +3,7 @@ log = require('ko/logging').getLogger 'preference-spy'
 
 class SourceRoot
 	opened: false
-	index: 0
+	index: -1
 	loaded: false
 	filterTerm: ''
 	disposed: false
@@ -40,7 +40,8 @@ class SourceRoot
 		# all children < index are unfiltered. Otherwise
 		# filtering/unfiltering causes the new child to move around.
 
-		accept = @filterTerm.length is 0 or child.name.indexOf(@filterTerm) isnt -1
+		accept = @filterTerm.length is 0 or
+			child.name.indexOf(@filterTerm) isnt -1
 
 		if index
 			@allChildren.splice index, 0, child
@@ -76,7 +77,7 @@ class SourceRoot
 			@getChild(index).getVisualProperties()
 
 	getPrefSource: (index) ->
-		#roots have no prefs themselves
+		#roots typically have no prefs themselves
 		return null if index is @index
 		@getChild(index).source
 
@@ -123,6 +124,11 @@ class SourceRoot
 			@index + @children.length
 		else
 			@index
+
+	reindex: ->
+		@allChildren.forEach (child) -> child.index = -1
+		offset = @index
+		@children.forEach (child, index) -> child.index = offset + index + 1
 
 	toggleOpen: ->
 		#log.warn "SourceRoot::toggleOpen"
