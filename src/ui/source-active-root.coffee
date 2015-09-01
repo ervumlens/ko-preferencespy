@@ -32,7 +32,9 @@ class SourceActiveRoot extends SourceRoot
 		@registerListeners()
 
 	initGlobal: ->
-		@addChild new SourceRow(@, @createKey('global'), PrefSource.create prefService.prefs)
+		global = new SourceRow(@, @createKey('global'), PrefSource.create prefService.prefs)
+		global.filterable = false
+		@addChild global
 
 	initCurrentProjects: ->
 		return unless partService.currentProject
@@ -68,9 +70,44 @@ class SourceActiveRoot extends SourceRoot
 		new SourceRow(@, @createKey('project', project), PrefSource.create project)
 
 	observe: (subject, topic, data) ->
-		log.warn "SourceActiveRoot::observe #{topic} (#{data})"
 		switch topic
 			when 'current_project_changed' then @resetCurrentProjects()
+
+	invalidateChild: (index) ->
+		@view.invalidateRow @index + index + 1
+
+	resetCurrentProjects: ->
+		# The best we can do here is operate on `currentProject`
+		# even though multiple projects may be open. We end up visually "closing"
+		# projects because of this. :frown:
+
+		if partService.currentProject
+			# Attach the project if it already has as row.
+			# Otherwise, give it a row after global.
+
+			newProject = partService.currentProject
+			matchedIndex = -1
+			key = @createKey 'project', newProject
+
+			found = @findChild key, (child, index) =>
+				# The project already has a row. Reattach it.
+				child.attach newProject
+				@invalidateChild index
+
+			if not found
+				# Not listed, so add it after global.
+				# Global is never filtered out, so this works fine.
+				child = @createProjectRow(newProject)
+				child.markAsAdded()
+				@addChild child, 1
+				@view.reindex()
+				@view.rowCountChanged @index + 2, 1
+		else
+			# Detach all projects
+			@findAllProjects (project, index) =>
+				project.detach()
+				@invalidateChild index
+
 
 	handleWindowEvent: (event) ->
 		view = event.originalTarget
@@ -88,7 +125,7 @@ class SourceActiveRoot extends SourceRoot
 		key = @createKey 'view', view
 		found = @findChild key, (child, index) =>
 			child.attach view
-			@view.invalidateRow @index + index + 1
+			@invalidateChild index
 
 		if not found
 			# Add a new row
@@ -103,16 +140,25 @@ class SourceActiveRoot extends SourceRoot
 		for child, index in @children
 			if child.id is key
 				found = true
-				doContinue = visitor child, index
-				# Require an explicit true here
-				break unless doContinue is true
+				visitor child, index
+				break
 		found
+
+	findAllProjects: (visitor) ->
+		found = false
+		for child, index in @children
+			id = child.id
+			if id and id.indexOf('project:') is 0
+				found = true
+				visitor child, index
+		found
+
 
 	removeViewWithDoc: (view) ->
 		key = @createKey('view', view)
 		@findChild key, (child, index) =>
 			child.detach()
-			@view.invalidateRow @index + index + 1
+			@invalidateChild index
 
 	removeViewWithoutDoc: (view) ->
 		# The closed view is essentially worthless because
@@ -126,7 +172,7 @@ class SourceActiveRoot extends SourceRoot
 		for key in removedKeys
 			@findChild key, (child, index) =>
 				child.detach()
-				@view.invalidateRow @index + index + 1
+				@invalidateChild index
 
 	removeView: (view) ->
 		if view.koDoc
