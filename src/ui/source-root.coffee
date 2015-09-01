@@ -35,12 +35,19 @@ class SourceRoot
 		return true if index is @index
 		index > @index and @isOpen() and @childIndex(index) < @childCount
 
-	addChild: (child) ->
+	addChild: (child, index) ->
+		# XXX Only pass index if you can guarantee that
+		# all children < index are unfiltered. Otherwise
+		# filtering/unfiltering causes the new child to move around.
 
-		if @filterTerm.length is 0 or child.name.indexOf(@filterTerm) isnt -1
-			@children.push child
+		accept = @filterTerm.length is 0 or child.name.indexOf(@filterTerm) isnt -1
 
-		@allChildren.push child
+		if index
+			@allChildren.splice index, 0, child
+			@children.splice(index, 0, child) if accept
+		else
+			@allChildren.push child
+			@children.push(child) if accept
 
 	removeChildByIndex: (index) ->
 		@children.splice index, 1
@@ -49,11 +56,11 @@ class SourceRoot
 		@children = []
 
 		if @filterTerm.length is 0
-			for child in @allChildren
-				@children.push child
+			@children = @allChildren.concat()
 		else
-			for child in @allChildren
-				@children.push(child) if child.name.indexOf(@filterTerm) isnt -1
+			term = @filterTerm
+			@children = @allChildren.filter (child) ->
+				not (child.filterable and child.name.indexOf(term) is -1)
 
 	getChild: (index) ->
 		#log.warn "SourceRoot::getChild #{index}"
