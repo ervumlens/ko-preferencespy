@@ -13,6 +13,7 @@ partService = Cc["@activestate.com/koPartService;1"].getService Ci.koIPartServic
 
 SourceRow = require 'preferencespy/ui/source-row'
 SourceRoot = require 'preferencespy/ui/source-root'
+SourceGlobalRoot = require 'preferencespy/ui/source-global-root'
 SourceActiveRoot = require 'preferencespy/ui/source-active-root'
 SourceProjectsRoot = require 'preferencespy/ui/source-projects-root'
 SourceFilesRoot = require 'preferencespy/ui/source-files-root'
@@ -30,10 +31,12 @@ class SourceView
 		@.__defineGetter__ 'rowCount', =>
 			@getRowCount()
 
+		@globalRow = new SourceGlobalRoot @
 		@activeSourcesRow = new SourceActiveRoot @, @window
 		@allProjectsRow = new SourceProjectsRoot @
 		@allFilesRow = new SourceFilesRoot @
 		@roots = [
+			@globalRow,
 			@activeSourcesRow,
 			@allProjectsRow,
 			@allFilesRow,
@@ -108,6 +111,7 @@ class SourceView
 			root.index = lastIndex
 			#log.warn "SourceView::reindex: #{root.name} index is now #{root.index}"
 			lastIndex = root.lastIndex() + 1
+			root.reindex()
 
 	rootFor: (index) ->
 		for root in @roots
@@ -240,9 +244,11 @@ class SourceView
 
 	rowCountChanged: (start, difference) ->
 		log.warn "SourceView::rowCountChanged: #{start}, #{difference}"
+		return unless @treebox
 		@treebox.rowCountChanged start, difference
 
 	invalidateRow: (index) ->
+		return unless @treebox
 		@treebox.invalidateRow index
 
 	update: (fn) ->
