@@ -50,11 +50,6 @@ class SourceActiveRoot extends SourceRoot
 			when 'global' then 'global:global'
 			when 'project' then "project:#{obj.url}"
 			when 'view'
-				#log.warn "SourceActiveRoot::createKey: view has doc? #{obj.koDoc?}"
-				#log.warn "SourceActiveRoot::createKey: view has file? #{obj.koDoc?.file?}"
-				#log.warn "SourceActiveRoot::createKey: view has URI? #{obj.koDoc?.file?.URI}"
-				#log.warn "SourceActiveRoot::createKey: doc has displayPath? #{obj.koDoc?.displayPath}"
-
 				if obj.koDoc
 					if obj.koDoc.file?.URI
 						"view:#{obj.koDoc.file.URI}"
@@ -78,8 +73,6 @@ class SourceActiveRoot extends SourceRoot
 			when 'current_project_changed' then @resetCurrentProjects()
 
 	handleWindowEvent: (event) ->
-		log.warn "SourceActiveRoot::handleWindowEvent #{event.type}"
-
 		view = event.originalTarget
 
 		switch event.type
@@ -89,7 +82,6 @@ class SourceActiveRoot extends SourceRoot
 				@removeView view
 
 	addView: (view) ->
-		log.warn "SourceActiveRoot::addView: Adding #{@createKey 'view', view}"
 		# Check if the key is already in use by a row.
 		# If it is, re-attach. If not, create a new row.
 
@@ -118,7 +110,6 @@ class SourceActiveRoot extends SourceRoot
 
 	removeViewWithDoc: (view) ->
 		key = @createKey('view', view)
-		log.warn "SourceActiveRoot::removeViewWithDoc: Removing #{key}"
 		@findChild key, (child, index) =>
 			child.detach()
 			@view.invalidateRow @index + index + 1
@@ -134,7 +125,6 @@ class SourceActiveRoot extends SourceRoot
 
 		for key in removedKeys
 			@findChild key, (child, index) =>
-				log.warn "SourceActiveRoot::removeViewWithoutDoc: Removing child @ #{index} : #{child.id}"
 				child.detach()
 				@view.invalidateRow @index + index + 1
 
