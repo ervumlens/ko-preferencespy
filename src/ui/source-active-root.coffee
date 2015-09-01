@@ -65,9 +65,14 @@ class SourceActiveRoot extends SourceRoot
 	createProjectRow: (project) ->
 		new SourceRow(@, @createKey('project', project), PrefSource.create project)
 
+	clearSelection: ->
+		@view.clearSelection()
+		
 	observe: (subject, topic, data) ->
 		switch topic
-			when 'current_project_changed' then @resetCurrentProjects()
+			when 'current_project_changed'
+				@resetCurrentProjects()
+				@clearSelection()
 
 	addChild: (child, index) ->
 		super
@@ -125,8 +130,10 @@ class SourceActiveRoot extends SourceRoot
 		switch event.type
 			when 'view_opened'
 				@addView view
+				@clearSelection()
 			when 'view_closed'
 				@removeView view
+				@clearSelection()
 
 	addView: (view) ->
 		# Check if the key is already in use by a row.
