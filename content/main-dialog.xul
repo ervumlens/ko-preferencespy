@@ -76,8 +76,6 @@ http://mozilla.org/MPL/2.0/.
 						</vbox>
 						<splitter orient="horizontal"/>
 						<vbox flex="1">
-							<groupbox>
-								<caption label="Properties"/>
 								<grid>
 									<columns>
 										<column/>
@@ -91,23 +89,12 @@ http://mozilla.org/MPL/2.0/.
 													 readonly="true"
 													 value=""/>
 										</row>
-										<row align="center">
-											<spacer/>
-											<hbox>
-											<button id="result-pref-refresh"
-													  label="Refresh"
-													  oncommand="PreferenceSpy_RefreshResults(this, event)"
-													  />
-											<spacer flex="1"/>
-											</hbox>
-										</row>
 									</rows>
 								</grid>
 								<hbox align="center">
 								<!-- id -->
 								</hbox>
 								<!-- ?? -->
-							</groupbox>
 							<!-- view details -->
 							<groupbox>
 								<caption label="Search"/>
@@ -187,7 +174,12 @@ http://mozilla.org/MPL/2.0/.
 										</row>
 										<row align="center">
 											<!-- set a blank value here to ensure the message doesn't pop into view later -->
-											<spacer/><description id="search-message" flex="1" value=" "/>
+											<spacer/>
+											<description id="search-message" flex="1" value=" "/>
+											<button id="result-pref-refresh"
+													label="Reload"
+													oncommand="PreferenceSpy_RefreshResults(this, event)"/>
+
 										</row>
 									</rows>
 								</grid>
