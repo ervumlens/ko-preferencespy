@@ -19,11 +19,7 @@ class SourceRow
 	getVisualProperties: ->
 		switch @tag
 			when '-' then 'removed'
-			when '+' then 'added'
 			else ''
-
-	markAsAdded: ->
-		@tag = '+'
 
 	detach: ->
 		throw new Error("Cannot detach a detached row") unless @attached

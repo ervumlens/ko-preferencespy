@@ -67,7 +67,7 @@ class SourceActiveRoot extends SourceRoot
 
 	clearSelection: ->
 		@view.clearSelection()
-		
+
 	observe: (subject, topic, data) ->
 		switch topic
 			when 'current_project_changed'
@@ -120,7 +120,6 @@ class SourceActiveRoot extends SourceRoot
 			if not found
 				# Not listed, so add it first.
 				child = @createProjectRow(newProject)
-				child.markAsAdded()
 				@addChild child, 0
 
 
@@ -146,7 +145,6 @@ class SourceActiveRoot extends SourceRoot
 		if not found
 			# Add a new row
 			child = @createViewRow view
-			child.markAsAdded()
 			@addChild child
 
 	findChild: (key, visitor) ->
