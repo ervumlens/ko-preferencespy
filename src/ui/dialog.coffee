@@ -2,7 +2,7 @@ log = require('ko/logging').getLogger 'preference-spy'
 
 SourceView = require 'preferencespy/ui/source-view'
 ResultView = require 'preferencespy/ui/result-view'
-#MonitorView = require 'preferencespy/ui/monitor-view'
+MonitorView = require 'preferencespy/ui/monitor-view'
 
 sourceView = null
 resultView = null
@@ -23,7 +23,7 @@ monitorView = null
 	try
 		resultView = new ResultView mainWindow
 		sourceView = new SourceView mainWindow, resultView
-		monitorView = 0
+		monitorView = new MonitorView mainWindow
 	catch e
 		log.exception e
 
@@ -38,6 +38,7 @@ monitorView = null
 	log.warn "PreferenceSpy_OnUnload"
 	sourceView.dispose() if sourceView
 	resultView.dispose() if resultView
+	monitorView.dispose() if monitorView
 
 @PreferenceSpy_OnResize = ->
 	#log.warn "PreferenceSpyOnResize"
@@ -53,3 +54,15 @@ monitorView = null
 
 @PreferenceSpy_RefreshResults = ->
 	resultView.refresh()
+
+@PreferenceSpy_StartMonitoring = ->
+	monitorView.startMonitoring()
+
+@PreferenceSpy_StopMonitoring = ->
+	monitorView.stopMonitoring()
+
+@PreferenceSpy_DoMonitorFilter = ->
+	monitorView.doFilter()
+
+@PreferenceSpy_ChangeMonitorSettings = ->
+	monitorView.refreshSettings()

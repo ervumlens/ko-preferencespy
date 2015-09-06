@@ -231,13 +231,24 @@ http://mozilla.org/MPL/2.0/.
 						<groupbox>
 							<caption label="Settings"/>
 							<vbox>
-								<checkbox id="monitor-settings-global" label="Monitor Global Changes"/>
-								<checkbox id="monitor-settings-openproject" label="Monitor Open Project Changes"/>
-								<checkbox id="monitor-settings-openfile" label="Monitor Open File Changes"/>
+								<checkbox id="monitor-settings-global"
+										  label="Monitor Global Changes"
+										  oncommand="PreferenceSpy_ChangeMonitorSettings(this, event);" />
+								<checkbox id="monitor-settings-openproject"
+										  label="Monitor Open Project Changes"
+										  oncommand="PreferenceSpy_ChangeMonitorSettings(this, event);" />
+								<checkbox id="monitor-settings-openfile"
+										  label="Monitor Open File Changes"
+										  oncommand="PreferenceSpy_ChangeMonitorSettings(this, event);" />
 								<hbox>
 									<button id="monitor-settings-start"
 											label="Start Monitoring"
-											oncommand="PreferenceSpy_DoMonitor(this, event);"/>
+											disabled="true"
+											oncommand="PreferenceSpy_StartMonitoring(this, event);"/>
+									<button id="monitor-settings-stop"
+											label="Stop Monitoring"
+											hidden="true"
+											oncommand="PreferenceSpy_StopMonitoring(this, event);"/>
 								</hbox>
 							</vbox>
 						</groupbox>
@@ -333,10 +344,14 @@ http://mozilla.org/MPL/2.0/.
 								  flex="1"
 								  hidecolumnpicker="true">
 								<treecols>
+									<treecol id="changed-timecol"
+											 label="Time"
+											 primary="true"
+											 sortDirection="ascending"/>
+									<treecol id="changed-scopecol"
+											 label="Scope"/>
 									<treecol id="changed-namecol"
 											 label="Name"
-											 primary="true"
-											 sortDirection="ascending"
 											 flex="1"/>
 									<splitter class="tree-splitter"/>
 									<treecol id="changed-valuecol"
