@@ -9,11 +9,8 @@ qiFactory = (obj, ctors...) ->
 		iface = ctor.interface
 		try
 			return new ctor(obj.QueryInterface iface)
-		catch e
 			# Exceptions are expected. Don't log them unless
 			# you (as in, "me") are sure there's a problem here.
-
-			#log.warn e
 	null
 
 class PrefSource
@@ -24,7 +21,7 @@ class PrefSource
 	@create: (source) ->
 		# Possible arg types: koIProject, koIView, koIPreferenceContainer
 		result = if source.QueryInterface
-				qiFactory source, ViewSource, ProjectSource, ContainerSource
+			qiFactory source, ViewSource, ProjectSource, ContainerSource
 
 		if not result
 			throw new Error("Cannot create PrefSource from #{source}")

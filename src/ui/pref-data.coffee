@@ -6,25 +6,18 @@ extractObjectValue = (container) ->
 	try
 		ordered = container.QueryInterface Ci.koIOrderedPreference
 		return new OrderedPreference ordered
-	catch e
-		#log.warn e
+
 	try
 		prefset = container.QueryInterface Ci.koIPreferenceSet
 		return new PreferenceSet prefset
-	catch e
-		#log.warn e
 
 	try
 		container.QueryInterface Ci.koIPreferenceChild
 		log.warn "Encountered koIPreferenceChild"
-	catch e
-		#log.warn e
 
 	try
 		cache = container.QueryInterface Ci.koIPreferenceCache
 		return new PreferenceCache cache
-	catch e
-		#log.warn e
 
 	log.warn "Unknown container type encountered: id = #{container.id}"
 
