@@ -348,8 +348,10 @@ http://mozilla.org/MPL/2.0/.
 											 label="Time"
 											 primary="true"
 											 sortDirection="ascending"/>
+									<splitter class="tree-splitter"/>
 									<treecol id="changed-scopecol"
 											 label="Scope"/>
+									<splitter class="tree-splitter"/>
 									<treecol id="changed-namecol"
 											 label="Name"
 											 flex="1"/>
