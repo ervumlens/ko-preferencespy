@@ -85,7 +85,7 @@ class PrefLogger
 
 	constructor: ->
 		@prefService = Cc["@activestate.com/koPrefService;1"].
-                getService(Ci.koIPrefService);
+                getService(Ci.koIPrefService)
 
 	toggleGlobal: ->
 		if @loggingGlobal

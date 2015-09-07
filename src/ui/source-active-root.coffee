@@ -38,7 +38,7 @@ class SourceActiveRoot extends SourceRoot
 		@addChild @createProjectRow partService.currentProject
 
 	initCurrentViews: ->
-		countObject = new Object();
+		countObject = new Object()
 		views = viewService.getAllViews '', countObject
 
 		for view in views
@@ -191,7 +191,7 @@ class SourceActiveRoot extends SourceRoot
 			@removeViewWithoutDoc view
 
 	createKeysForOpenViews: ->
-		countObject = new Object();
+		countObject = new Object()
 		views = viewService.getAllViews '', countObject
 
 		@createKey('view', view) for view in views when view.koDoc?
