@@ -13,6 +13,7 @@ prefService = Cc["@activestate.com/koPrefService;1"].getService(Ci.koIPrefServic
 partService = Cc["@activestate.com/koPartService;1"].getService(Ci.koIPartService)
 
 MonitorSettings = require 'preferencespy/ui/monitor-settings'
+MonitorRow = require 'preferencespy/ui/monitor-row'
 
 PrefData = require 'preferencespy/ui/pref-data'
 
@@ -167,34 +168,6 @@ class MonitorView
 			observer.disconnect()
 
 		@prefObservers.splice(0)
-
-class MonitorRow
-	constructor: (@observer, @prefset, name) ->
-		@time = new Date()
-
-		# The observer represents a prefset, but the change
-		# this row represents may have occurred in a sub-prefset.
-		# Therefore, we have to create a new container and
-		# reference it, rather than work through the observer.
-
-		@container = PrefData.getContainer @prefset
-
-		# Our visual name is the concatenation of the ancestor ids
-		# with this preference name. The result is crude but
-		# it's much more useful than a name like "1".
-		nameArray = @container.buildNameArray name
-
-		# HACK: if the scope is global, make sure "global" isn't
-		# first. I think this has to do with "global" being a child
-		# of "default".
-		if @observer.scope is 'global'
-			nameArray.shift() if nameArray[0] is 'global'
-
-		@name = nameArray.join '\u21C0' # '\u2192'
-
-		@type = @container.getTypeForId name
-		@value = @container.getValueForId name, @type
-		@scope = @observer.scope
 
 class PreferenceObserver
 	connected: false
