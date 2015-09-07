@@ -42,19 +42,14 @@ class PreferenceContainer
 	buildNameArray: (name) ->
 		# Gather up the ancestor names, if they exist
 
-		names = []
-		if @hasParentContainer()
-			parent = @container.container
-			while parent
-				names.unshift parent.id
-				parent = parent.container
+		names = [@id()]
+		names.push(name) if name
+		parent = @container.container
+		while parent
+			names.unshift parent.id
+			parent = parent.container
 
-		names.push name
 		names
-
-	hasParentContainer: ->
-		log.warn "Called 'hasParentContainer' on a mystery container"
-		false
 
 	addObserver: (observer) ->
 		observerService = @container.prefObserverService
@@ -124,12 +119,6 @@ class PreferenceSet extends PreferenceContainer
 	getName: (index) ->
 		@allIds[index]
 
-	hasParentContainer: ->
-		# It's possible that a parent and child have the same
-		# id, but whatever.
-		log.warn "PreferenceSet::hasParentContainer: #{@container.id}/#{@container.container?}/#{@container.container?.id}"
-		@container.container? # and @container.container.id isnt @container.id
-
 	isOverwritten: (id) ->
 		@container.hasPrefHere(id)
 
@@ -145,12 +134,6 @@ class OrderedPreference extends PreferenceContainer
 
 	getName: (index) ->
 		index
-
-	hasParentContainer: ->
-		# It's possible that a parent and child have the same
-		# id, but whatever.
-		log.warn "OrderedPreference::hasParentContainer: #{@container.id}/#{@container.parent?}/#{@container.parent?.id}"
-		@container.parent and @container.parent.id isnt @container.id
 
 class PreferenceCache extends PreferenceContainer
 	constructor: (@container) ->
@@ -179,9 +162,6 @@ class PreferenceCache extends PreferenceContainer
 		target.type = 'object'
 		target.value = '(container)'
 		target.container = extractObjectValue @container.getPref(id)
-
-	hasParentContainer: ->
-		false
 
 class PrefData
 	meta: []
