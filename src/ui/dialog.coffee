@@ -18,7 +18,6 @@ monitorView = null
 	log.warn "PreferenceSpy_OnLoad"
 
 	mainWindow = window.arguments[0].window
-	#log.warn "PreferenceSpyOnLoad::arguments contains window? #{sourceWindow}"
 
 	try
 		resultView = new ResultView mainWindow
