@@ -6,30 +6,13 @@ It simplifies inspecting user preferences.
 ###Installation
 The extension XPI is available at https://github.com/ervumlens/ko-preferencespy/releases .
 
-Once installed, the extension adds a new "Preference Spy" menu under the main "Tools" menu,
-and a "All (Read-Only)" page in the Preferences dialog.
+Once installed, the extension adds a new "Preference Spy" menu item under the main "Tools" menu.
 
 ###Usage
 
-Preference Spy has two main functions: viewing all preferences and monitoring preference changes.
+To view preferences, Open the "Tools" main menu and select "Preference Spy".
 
-To view all preferences, simply open a Preferences dialog, enable the "Show Advanced" option,
-and click on the "All (Read-Only)" item.
-
-![Screenshot of new preference item](doc/screenshot-1.png)
-
-To monitor preference changes, open the "Preference Spy" menu under "Tools",
-and choose a "Log (whatever) Pref Changes" option. Now preference changes will be logged to Komodo's
-standard error log.
-
-###Limitations
-
-* Temporary or transient preference changes are not logged.
-These are changes that look fine in the preference dialog but do not appear to be applied as expected.
-
-* Certain project preferences are not logged. This is being investigated.
-
-* The search panel in the Preferences dialog does not search for nested preference values.
+![Screenshot of preference dialog](doc/screenshot-1.png)
 
 ###Build
 
@@ -46,3 +29,5 @@ Report bugs, make enhancement requests, or ask questions at https://github.com/e
 Thanks to Komodo Edit's developers and contributors, past and present, for making an editor that's enjoyable to use.
 
 Thanks to Jeremy Ashkenas for creating CoffeeScript.
+
+Thanks to @nathanr for his feedback on version 1.
