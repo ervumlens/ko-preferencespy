@@ -30,4 +30,4 @@ Thanks to Komodo Edit's developers and contributors, past and present, for makin
 
 Thanks to Jeremy Ashkenas for creating CoffeeScript.
 
-Thanks to @nathanr for his feedback on version 1.
+Thanks to [@naatan](https://github.com/naatan) for his feedback on version 1.
